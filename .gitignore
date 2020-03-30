@@ -3,6 +3,10 @@ Banana_Linux_NoVis
 Banana_Linux
 unity-environment.log
 checkpoint.pth
+scores.png
+
+!files/checkpoint.pth
+!files/scores.png
 
 # IDE generated
 .vscode
