@@ -83,6 +83,10 @@ class DQNAgent(Agent):
     def act(self, state, eps=0.):
         """Returns action for given state as per current policy.
 
+        Uses epsilon-greedy action selection. When epsilon is 1.0,
+        the action is totally random. When epsilon is 0.0 the returned
+        action is always the best action according the current policy.
+
         Args:
             state (array_like): current state
             eps (float): epsilon, for epsilon-greedy action selection
@@ -90,15 +94,17 @@ class DQNAgent(Agent):
         Returns:
             int: chosen action
         """
-        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
-        self.qnetwork_local.eval()
-        with torch.no_grad():
-            action_values = self.qnetwork_local(state)
-        self.qnetwork_local.train()
 
-        # Epsilon-greedy action selection
         if random.random() > eps:
+
+            state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+            self.qnetwork_local.eval()
+            with torch.no_grad():
+                action_values = self.qnetwork_local(state)
+            self.qnetwork_local.train()
+
             return np.argmax(action_values.cpu().data.numpy())
+
         else:
             return random.choice(np.arange(self.action_size))
 
