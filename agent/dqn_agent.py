@@ -67,8 +67,14 @@ class DQNAgent(Agent):
         self.replay_buffer_size = int(replay_buffer_size)
         self.seed = random.seed(seed)
 
-        self.qnetwork_local = QNetwork(state_size, action_size, seed).to(device)
-        self.qnetwork_target = QNetwork(state_size, action_size, seed).to(device)
+        self.layer_sizes = (state_size, round(state_size / 2))
+        self.qnetwork_local = QNetwork(
+            state_size, action_size, layer_sizes=self.layer_sizes, seed=seed
+        ).to(device)
+        self.qnetwork_target = QNetwork(
+            state_size, action_size, layer_sizes=self.layer_sizes, seed=seed
+        ).to(device)
+
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=learning_rate)
 
         self.memory = ReplayBuffer(action_size, self.replay_buffer_size, batch_size, seed)
