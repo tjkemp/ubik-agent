@@ -15,8 +15,7 @@ def train(
         target_score=None,
         eps_start=1.0,
         eps_end=0.01,
-        eps_decay=0.995,
-        savefile='checkpoint.pth'):
+        eps_decay=0.995):
     """Training loop for given reinforcement learning agent in given environment.
 
     Args:
@@ -28,7 +27,9 @@ def train(
         eps_start (float): starting value of epsilon, for epsilon-greedy action selection
         eps_end (float): minimum value of epsilon
         eps_decay (float): multiplicative factor (per episode) for decreasing epsilon
-        savefile (str): filename for the saved agent model
+
+    Side effects:
+        Alters the state of `agent` and `env`.
 
     Returns:
         list: sum of all rewards per episode
@@ -80,8 +81,6 @@ def train(
         if target_score is not None:
             if mean_score >= target_score:
                 print(f"\nTarget score reached in {i_episode:d} episodes!\tAverage Score: {mean_score:.2f}")
-                print(f"Saving model as {savefile}.")
-                agent.save(savefile)
                 break
 
     return scores
@@ -91,7 +90,10 @@ def main(
         n_episodes,
         max_time_steps,
         target_score):
-    """ Main function creates the environment and and the agent and starts training."""
+    """Main function creates the environment and and the agent and starts training.
+
+    Saves agent modelfile and score graph as files.
+    """
 
     env = UnityEnvironment(file_name=filename_env_unity)
 
@@ -118,10 +120,16 @@ def main(
 
     env.close()
 
+    savefile = 'checkpoint.pth'
+    print(f"Saving agent model as {savefile}.")
+    agent.save(savefile)
+
+    scorefile = 'scores.png'
+    print(f"Saving score graph as {scorefile}.")
     plt.plot(list(range(1, len(scores) + 1)), scores)
     plt.ylabel('score')
     plt.xlabel('episode')
-    plt.savefig('scores.png')
+    plt.savefig(scorefile)
 
 if __name__ == "__main__":
 
