@@ -10,8 +10,8 @@ Q-Learning is a model-free reinforcement learning algorithm to learn a policy fo
 
 - Fully-connected layers:
     1. input of 37 neurons with relu activation,
-    2. 64 neurons with relu activation,
-    3. 64 neurons with relu activation,
+    2. 37 neurons with relu activation,
+    3. 18 neurons with relu activation,
     4. and output of 4 neurons with no activation.
 - Adam optimizer with learning_rate 5e-4 and batch size 64
 
