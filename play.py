@@ -4,6 +4,8 @@ from collections import deque
 from unityagents import UnityEnvironment
 from agent import DQNAgent
 
+from train import DEFAULT_ENV_PATH
+
 def play(
         agent,
         env,
@@ -23,7 +25,7 @@ def play(
 
     brain_name = env.brain_names[0]
 
-    env_info = env.reset(train_mode=True)[brain_name]
+    env_info = env.reset(train_mode=False)[brain_name]
     state = env_info.vector_observations[0]
 
     score = 0
@@ -58,7 +60,7 @@ def main(
     # NOTE: the environment only has one brain: 'BananaBrain'
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
-    env_info = env.reset(train_mode=True)[brain_name]
+    env_info = env.reset(train_mode=False)[brain_name]
 
     state_size = len(env_info.vector_observations[0])
     action_size = brain.vector_action_space_size
@@ -82,8 +84,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--unity_env',
         nargs='?',
-        help='unity environment file, default `Banana_Linux_Novis`',
-        default='./Banana_Linux_NoVis/Banana.x86_64')
+        help=f'unity environment file, default {DEFAULT_ENV_PATH}',
+        default=DEFAULT_ENV_PATH)
     parser.add_argument(
         'modelfile',
         nargs='?',

@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from unityagents import UnityEnvironment
 from agent import DQNAgent
 
+DEFAULT_ENV_PATH = './Banana_Linux/Banana.x86_64'
+
 def train(
         agent,
         env,
@@ -95,7 +97,7 @@ def main(
     Saves agent modelfile and score graph as files.
     """
 
-    env = UnityEnvironment(file_name=filename_env_unity)
+    env = UnityEnvironment(file_name=filename_env_unity, no_graphics=True)
 
     # NOTE: the environment only has one brain: 'BananaBrain'
     brain_name = env.brain_names[0]
@@ -137,8 +139,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--unity_env',
         nargs='?',
-        help='unity environment file, default Banana_Linux_Novis',
-        default='./Banana_Linux_NoVis/Banana.x86_64')
+        help=f'unity environment file, default {DEFAULT_ENV_PATH}',
+        default=DEFAULT_ENV_PATH)
     parser.add_argument(
         '--episodes',
         nargs='?',
