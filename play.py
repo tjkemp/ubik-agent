@@ -4,6 +4,8 @@ from collections import deque
 from unityagents import UnityEnvironment
 from agent import DQNAgent
 
+from train import DEFAULT_ENV_PATH
+
 def play(
         agent,
         env,
@@ -82,8 +84,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--unity_env',
         nargs='?',
-        help='unity environment file, default `Banana_Linux_Novis`',
-        default='./Banana_Linux_NoVis/Banana.x86_64')
+        help=f'unity environment file, default {DEFAULT_ENV_PATH}',
+        default=DEFAULT_ENV_PATH)
     parser.add_argument(
         'modelfile',
         nargs='?',

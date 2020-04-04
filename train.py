@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from unityagents import UnityEnvironment
 from agent import DQNAgent
 
+DEFAULT_ENV_PATH = './Banana_Linux/Banana.x86_64'
+
 def train(
         agent,
         env,
@@ -137,8 +139,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--unity_env',
         nargs='?',
-        help='unity environment file, default Banana_Linux_Novis',
-        default='./Banana_Linux_NoVis/Banana.x86_64')
+        help=f'unity environment file, default {DEFAULT_ENV_PATH}',
+        default=DEFAULT_ENV_PATH)
     parser.add_argument(
         '--episodes',
         nargs='?',
