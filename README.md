@@ -43,7 +43,18 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Install Udacity's prepared Unity Banana world
+3. Install Banana Collector environment for Unity
+
+If you want to see the trained agent in the environment on your screen, download and unzip the prepared environment binary files.
+
+```bash
+wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip
+unzip Banana_Linux.zip
+```
+
+Note that running the simulation requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
+
+Or, if you instead, want to run the environment without visualization, get the headless version of the environment. You will not be able to watch the agent, but you will be able to train the agent.
 
 ```bash
 wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux_NoVis.zip
