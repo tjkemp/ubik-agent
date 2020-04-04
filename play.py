@@ -23,7 +23,7 @@ def play(
 
     brain_name = env.brain_names[0]
 
-    env_info = env.reset(train_mode=True)[brain_name]
+    env_info = env.reset(train_mode=False)[brain_name]
     state = env_info.vector_observations[0]
 
     score = 0
@@ -58,7 +58,7 @@ def main(
     # NOTE: the environment only has one brain: 'BananaBrain'
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
-    env_info = env.reset(train_mode=True)[brain_name]
+    env_info = env.reset(train_mode=False)[brain_name]
 
     state_size = len(env_info.vector_observations[0])
     action_size = brain.vector_action_space_size
