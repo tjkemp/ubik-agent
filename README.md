@@ -6,13 +6,13 @@ This project trains a Deep Q-Learning agent in Python to navigate and collect ba
 
 ![Trained Agent](files/banana-environment.gif)
 
-The world is a Unity environment and the agent connects to the it through Unity ML-Agents package which is an open-source Unity plugin that enables games and simulations to serve as environments for training intelligent agents.
-
 This project would be a simple example on how to train a DQN agent and use it with Unity for anyone interested. The code is extendable for any Unity environment, although currently, the project uses somewhat old versions of dependencies.
 
 Requirements for running the project are Linux, Python version >= 3.6, Unity ML-agents 0.4.0, and Pytorch 0.4.
 
 ## Unity Environment and agent details
+
+The world is a Unity environment and the agent connects to the it through [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents) package which is an open-source Unity plugin that enables games and simulations to serve as environments for training intelligent agents. The environment is provided by Udacity and it is somewhat similar to single agent version of [BananaCollector](https://github.com/Unity-Technologies/ml-agents/blob/0.4.0/docs/Learning-Environment-Examples.md#banana-collector) environment in Unity's ML-agents package.
 
 A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is provided for collecting a blue banana. Thus, the goal of the agent is to collect as many yellow bananas as possible while avoiding blue bananas.
 
