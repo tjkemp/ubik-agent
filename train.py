@@ -97,7 +97,7 @@ def main(
     Saves agent modelfile and score graph as files.
     """
 
-    env = UnityEnvironment(file_name=filename_env_unity)
+    env = UnityEnvironment(file_name=filename_env_unity, no_graphics=True)
 
     # NOTE: the environment only has one brain: 'BananaBrain'
     brain_name = env.brain_names[0]
