@@ -3,8 +3,8 @@ from collections import deque
 
 import numpy as np
 import matplotlib.pyplot as plt
-
 from unityagents import UnityEnvironment
+
 from agent import DQNAgent
 
 DEFAULT_ENV_PATH = './Banana_Linux/Banana.x86_64'

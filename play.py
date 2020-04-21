@@ -2,9 +2,10 @@ import argparse
 from collections import deque
 
 from unityagents import UnityEnvironment
+
 from agent import DQNAgent
 
-from train import DEFAULT_ENV_PATH
+DEFAULT_ENV_PATH = './Banana_Linux/Banana.x86_64'
 
 def play(
         agent,
@@ -55,7 +56,7 @@ def main(
         modelfile):
     """ Main function creates the environment and and the agent and starts the simulation."""
 
-    env = UnityEnvironment(file_name=filename_env_unity)
+    env = UnityEnvironment(file_name=DEFAULT_ENV_PATH)
 
     # NOTE: the environment only has one brain: 'BananaBrain'
     brain_name = env.brain_names[0]
