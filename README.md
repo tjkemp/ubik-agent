@@ -40,7 +40,7 @@ git clone `repository url`
 cd `repository directory name`
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install --no-deps -r requirements.txt
 ```
 
 3. Install Banana Collector environment for Unity
