@@ -2,9 +2,6 @@ import random
 from collections import namedtuple, deque
 
 import numpy as np
-import torch
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class ReplayBuffer:
@@ -29,7 +26,7 @@ class ReplayBuffer:
         self.seed = random.seed(seed)
 
     def add(self, state, action, reward, next_state, done):
-        """Adds a new experience to memory."""
+        """Adds a new experience into buffer."""
 
         exp = self.experience(state, action, reward, next_state, done)
         self.memory.append(exp)
@@ -39,21 +36,21 @@ class ReplayBuffer:
 
         experiences = random.sample(self.memory, k=self.batch_size)
 
-        states = torch.from_numpy(np.vstack(
+        states = np.vstack(
             [exp.state for exp in experiences if exp is not None]
-        )).float().to(device)
-        actions = torch.from_numpy(np.vstack(
+        )
+        actions = np.vstack(
             [exp.action for exp in experiences if exp is not None]
-        )).long().to(device)
-        rewards = torch.from_numpy(np.vstack(
+        )
+        rewards = np.vstack(
             [exp.reward for exp in experiences if exp is not None]
-        )).float().to(device)
-        next_states = torch.from_numpy(np.vstack(
+        )
+        next_states = np.vstack(
             [exp.next_state for exp in experiences if exp is not None]
-        )).float().to(device)
-        dones = torch.from_numpy(np.vstack(
+        )
+        dones = np.vstack(
             [exp.done for exp in experiences if exp is not None]
-        ).astype(np.uint8)).float().to(device)
+        ).astype(np.uint8)
 
         return (states, actions, rewards, next_states, dones)
 
