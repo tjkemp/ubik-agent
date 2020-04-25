@@ -16,7 +16,7 @@ class ReplayBuffer:
         """
 
         self.action_size = action_size
-        self.memory = deque(maxlen=buffer_size)
+        self.buffer = deque(maxlen=buffer_size)
         self.batch_size = batch_size
         self.experience = namedtuple(
             "Experience",
@@ -27,12 +27,12 @@ class ReplayBuffer:
         """Adds a new experience into buffer."""
 
         exp = self.experience(state, action, reward, next_state, done)
-        self.memory.append(exp)
+        self.buffer.append(exp)
 
     def sample(self):
-        """Randomly samples a batch of experiences from memory."""
+        """Randomly samples a batch of experiences from buffer."""
 
-        experiences = random.sample(self.memory, k=self.batch_size)
+        experiences = random.sample(self.buffer, k=self.batch_size)
 
         states = [exp.state for exp in experiences]
         actions = [exp.action for exp in experiences]
@@ -43,5 +43,5 @@ class ReplayBuffer:
         return (states, actions, rewards, next_states, dones)
 
     def __len__(self):
-        """Return the current size of internal memory."""
-        return len(self.memory)
+        """Return the current size of internal buffer."""
+        return len(self.buffer)
