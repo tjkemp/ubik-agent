@@ -61,7 +61,7 @@ class DQNAgent(Agent):
 
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=learning_rate)
 
-        self.memory = ReplayBuffer(action_size, self.replay_buffer_size, batch_size, seed)
+        self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
         self.timestep = 0
 
     def act(self, state, eps=0.):
