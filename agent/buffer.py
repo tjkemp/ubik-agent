@@ -9,27 +9,26 @@ class ReplayBuffer:
         """Initialize a ReplayBuffer object.
 
         Args:
-            action_size (int): dimension of each action
             buffer_size (int): maximum size of buffer
             batch_size (int): size of each training batch
             seed (int): random seed
-        """
 
+        """
         self.buffer = deque(maxlen=buffer_size)
         self.batch_size = batch_size
-        self.experience = namedtuple(
+        self.Experience = namedtuple(
             "Experience",
-            field_names=["state", "action", "reward", "next_state", "done"])
+            ["state", "action", "reward", "next_state", "done"])
         self.seed = random.seed(seed)
 
     def add(self, state, action, reward, next_state, done):
-        """Adds a new experience into buffer."""
+        """Add a new experience into buffer."""
 
-        exp = self.experience(state, action, reward, next_state, done)
+        exp = self.Experience(state, action, reward, next_state, done)
         self.buffer.append(exp)
 
     def sample(self):
-        """Randomly samples a batch of experiences from buffer."""
+        """Sample a random batch of experiences from buffer."""
 
         experiences = random.sample(self.buffer, k=self.batch_size)
 
