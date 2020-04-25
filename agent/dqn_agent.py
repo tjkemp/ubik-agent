@@ -132,6 +132,11 @@ class DQNAgent(Agent):
             gamma (float): discount factor
         """
         states, actions, rewards, next_states, dones = experiences
+        states = torch.as_tensor(states, dtype=torch.float)
+        actions = torch.as_tensor(actions, dtype=torch.long).unsqueeze(-1)
+        rewards = torch.as_tensor(rewards, dtype=torch.float).unsqueeze(-1)
+        next_states = torch.as_tensor(next_states, dtype=torch.float)
+        dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
         Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
 

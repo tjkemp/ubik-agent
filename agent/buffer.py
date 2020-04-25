@@ -1,8 +1,6 @@
 import random
 from collections import namedtuple, deque
 
-import numpy as np
-
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
@@ -36,21 +34,11 @@ class ReplayBuffer:
 
         experiences = random.sample(self.memory, k=self.batch_size)
 
-        states = np.vstack(
-            [exp.state for exp in experiences if exp is not None]
-        )
-        actions = np.vstack(
-            [exp.action for exp in experiences if exp is not None]
-        )
-        rewards = np.vstack(
-            [exp.reward for exp in experiences if exp is not None]
-        )
-        next_states = np.vstack(
-            [exp.next_state for exp in experiences if exp is not None]
-        )
-        dones = np.vstack(
-            [exp.done for exp in experiences if exp is not None]
-        ).astype(np.uint8)
+        states = [exp.state for exp in experiences]
+        actions = [exp.action for exp in experiences]
+        rewards = [exp.reward for exp in experiences]
+        next_states = [exp.next_state for exp in experiences]
+        dones = [exp.done for exp in experiences if exp]
 
         return (states, actions, rewards, next_states, dones)
 
