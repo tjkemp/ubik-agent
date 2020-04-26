@@ -1,4 +1,3 @@
-from collections import namedtuple, deque
 import random
 
 import numpy as np
