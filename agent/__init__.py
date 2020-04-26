@@ -1,1 +1,1 @@
-from .dqn_agent import Agent, DQNAgent, ReplayBuffer
+from .dqn import Agent, DQNAgent, ReplayBuffer
