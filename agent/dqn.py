@@ -127,8 +127,9 @@ class DQNAgent(Agent):
         """Update value parameters using given batch of experience tuples.
 
         Args:
-            experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples
+            experiences (list): list of (s, a, r, s', done) tuples
             gamma (float): discount factor
+
         """
         states, actions, rewards, next_states, dones = experiences
         states = torch.as_tensor(states, dtype=torch.float)
