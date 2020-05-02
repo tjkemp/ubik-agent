@@ -37,10 +37,9 @@ class RandomAgent(Agent):
     def act(self, state):
 
         if self.action_type == 'discrete':
-            return np.random.choice(self.action_size)
-        else:
-            actions = np.random.randn(self.num_agents, self.action_size)
-            actions = np.clip(actions, -1, 1)
+            return np.random.randint(self.action_size, size=self.num_agents)
+        elif self.action_type == 'continuous':
+            return np.random.randn(self.num_agents, self.action_size)
 
     def step(self):
         pass
