@@ -85,6 +85,8 @@ class UnityInteraction:
                 if ended:
                     break
 
+            scores.append(score)
+
         return scores
 
     def train(
