@@ -95,7 +95,7 @@ class DQNAgent(Agent):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
-        self.memory.add(state, action, reward, next_state, done)
+        self.memory.add(state[0], action, reward[0], next_state[0], done[0])
 
         self.timestep = (self.timestep + 1) % self.update_interval
         if self.timestep == 0:

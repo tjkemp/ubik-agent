@@ -23,16 +23,17 @@ class UnityInteraction:
         self._state_size, self._action_size, self._num_agents = info
 
     @staticmethod
-    def stats(env):
+    def stats(env, brain_name=None):
 
-        brain_name = env.brain_names[0]
+        if brain_name is None:
+            brain_name = env.brain_names[0]
 
         brain = env.brains[brain_name]
         action_size = brain.vector_action_space_size
 
         env_info = env.reset(train_mode=False)[brain_name]
-        state_size = len(env_info.vector_observations[0])
         num_agents = len(env_info.agents)
+        state_size = env_info.vector_observations.shape[1]
 
         return state_size, action_size, num_agents
 
@@ -67,37 +68,36 @@ class UnityInteraction:
             state = env_info.vector_observations
             score = np.zeros(self._num_agents)
 
-            for step in range(1, max_time_steps + 1):
+            for timestep in range(1, max_time_steps + 1):
 
                 # choose and execute an action in the environment
                 action = self._agent.act(state)
-                action = np.random.choice(self._action_size)
                 env_info = self._env.step(action)[self._brain_name]
 
                 # observe the state and the reward
-                next_state = env_info.vector_observations[0]
-                reward = env_info.rewards[0]
-                ended = env_info.local_done[0]
+                next_state = env_info.vector_observations
+                reward = env_info.rewards
+                ended = env_info.local_done
 
                 score += reward
                 state = next_state
 
-                if ended:
+                if np.any(ended):
                     break
 
-            scores.append(score)
+            scores.append(np.max(score))
 
         return scores
 
     def train(
             self,
-            n_episodes=1,
+            num_episodes=1,
             max_time_steps=1000,
             target_score=0.5):
         """Trains the agent in the environment for a given number of episodes.
 
         Args:
-            n_episodes (int): maximum number of training episodes
+            num_episodes (int): maximum number of training episodes
             max_time_steps (int): maximum number of timesteps per episode
             target_score (float): target score at which to end training
 
@@ -111,10 +111,10 @@ class UnityInteraction:
         scores = []
         scores_window = deque(maxlen=100)
 
-        for i_episode in range(1, n_episodes + 1):
+        for i_episode in range(1, num_episodes + 1):
 
             env_info = self._env.reset(train_mode=True)[self._brain_name]
-            state = env_info.vector_observations[0]
+            state = env_info.vector_observations
 
             score = 0
 
@@ -124,19 +124,22 @@ class UnityInteraction:
 
                 # choose and execute actions
                 action = self._agent.act(state)  # noise=True)
-                action = np.clip(action, -1, 1)
+                # action = np.clip(action, -1, 1)
                 env_info = self._env.step(action)[self._brain_name]
 
                 # observe state and reward
-                next_state = env_info.vector_observations[0]
-                reward = env_info.rewards[0]
-                done = env_info.local_done[0]
+                next_state = env_info.vector_observations
+                reward = env_info.rewards
+                done = env_info.local_done
 
                 # save action, obervation and reward for learning
                 self._agent.step(state, action, reward, next_state, done)
                 state = next_state
 
-                score += reward  # max(reward)
+                if isinstance(reward, list):
+                    score += max(reward)
+                else:
+                    score += reward
 
                 # agent.learn(timestep)
 
