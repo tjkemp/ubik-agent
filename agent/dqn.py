@@ -95,7 +95,7 @@ class DQNAgent(Agent):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
-        self.memory.add(state, action, reward, next_state, done)
+        self.memory.add(state[0], action, reward[0], next_state[0], done[0])
 
         self.timestep = (self.timestep + 1) % self.update_interval
         if self.timestep == 0:
@@ -127,8 +127,9 @@ class DQNAgent(Agent):
         """Update value parameters using given batch of experience tuples.
 
         Args:
-            experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples
+            experiences (list): list of (s, a, r, s', done) tuples
             gamma (float): discount factor
+
         """
         states, actions, rewards, next_states, dones = experiences
         states = torch.as_tensor(states, dtype=torch.float)
