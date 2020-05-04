@@ -1,12 +1,6 @@
 # Project specific files
-Banana_Linux_NoVis
-Banana_Linux
 unity-environment.log
-checkpoint.pth
-scores.png
-
-!files/checkpoint.pth
-!files/scores.png
+TODO.txt
 
 # IDE generated
 .vscode
@@ -44,6 +38,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.pytest_cache
 
 # IPython Notebook
 .ipynb_checkpoints
