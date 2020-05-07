@@ -63,15 +63,13 @@ pip install --no-deps -r requirements.txt
 
 3. Install Banana Collector environment for Unity
 
-If you want to see the trained agent in the environment on your screen, download and unzip the prepared environment binary files.
+Download and unzip the environment binary files with the `download.sh` script.
 
 ```bash
-cd environments
-wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip
-unzip Banana_Linux.zip
+./environments/download.sh banana
 ```
 
-Note that running the simulation requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
+Note that running the environment requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
 
 ## Instructions
 
@@ -80,7 +78,7 @@ The project has single python executable: `banana.py`, which is used both for tr
 To get help on arguments for each executable, run them with `-h` switch, for example:
 
 ```bash
-python banana.py -h
+./banana.py -h
 ```
 
 ### Running an episode with pre-trained agent
@@ -90,7 +88,7 @@ First, enter the python virtual environment if it's not activated already.
 The python executable takes the directory name of the trained agent as an argument. All the trained agents are in directory *models*.
 
 ```bash
-python banana.py run banana
+./banana.py run banana
 ```
 
 ### Training an agent
@@ -100,7 +98,7 @@ First, enter the python virtual environment if it's not activated already.
 The python executable takes the directory name of the trained agent as an argument. All the trained agents are in directory *models*.
 
 ```bash
-python banana.py train my-cool-agent
+./banana.py train my-cool-agent
 ```
 
 Which will output the following (omitting some Unity's messages):
