@@ -66,12 +66,13 @@ class Critic(nn.Module):
 
 
 class DDPGAgent(object):
-    """Interacts with and learns from the environment."""
+    """Deep Deterministic Policy Gradient Agent algorithm."""
 
     def __init__(
             self,
             state_size,
             action_size,
+            num_agents,
             lr_actor=3e-3,
             lr_critic=3e-3,
             batch_size=512,

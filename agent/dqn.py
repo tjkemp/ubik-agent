@@ -13,8 +13,17 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class DQNAgent(Agent):
-    """Interacts with and learns from the environment."""
+    """Deep Q-Learning algorithm for discrete actions spaces.
 
+    Deep Q-Learning algorithm first introduced by DeepMind's
+    [research paper](https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf).
+
+    Q-Learning is a model-free reinforcement learning algorithm to learn a policy
+    for an agent. In Deep Q-Learning, a neural network represents the Q. More
+    specifically, the DQN takes the state as an input and returns the corresponding
+    predicted action values for each possible actions.
+
+    """
     def __init__(
             self,
             state_size,
@@ -34,9 +43,9 @@ class DQNAgent(Agent):
         """Initializes an Agent object.
 
         Args:
-            state_size (int): dimension of each state
-            action_size (int): dimension of each action
-            num_agents (int): number of agents in the simulation
+            state_size (int): required, dimension of each state
+            action_size (int): required, dimension of each discrete action
+            num_agents (int): required, number of agents in the simulation
             learning_rate (int): learning rate for the neural network
             batch_size (int): batch size for training the neural network
             tau (int): soft update of target parameters
