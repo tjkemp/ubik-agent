@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -5,6 +6,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from .agent import Agent
 from .noise import OUNoise
 from .buffer import ReplayBuffer
 
@@ -65,8 +67,10 @@ class Critic(nn.Module):
         return self.fc4(x)
 
 
-class DDPGAgent(object):
+class DDPGAgent(Agent):
     """Deep Deterministic Policy Gradient Agent algorithm."""
+
+    savefilename = 'checkpoint.pth'
 
     def __init__(
             self,
@@ -103,18 +107,23 @@ class DDPGAgent(object):
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
-        self.learn_every = 1
-        self.learn_num_times = 1
+        self.step_counter = 0
         self.learn_counter = 0
 
+        self.learn_every = 1
+        self.learn_num_times = 1
+
+    def new_episode(self):
+        self.noise.reset()
+
     def step(self, states, actions, rewards, next_states, dones):
+
+        self.step_counter += 1
 
         for state, action, reward, next_state, done in zip(states, actions, rewards, next_states, dones):
             self.memory.add(state, action, reward, next_state, done)
 
-    def learn(self, timestep):
-
-        if timestep % self.learn_every == 0:
+        if self.step_counter % self.learn_every == 0:
             if len(self.memory) < self.batch_size:
                 return
 
@@ -137,8 +146,26 @@ class DDPGAgent(object):
 
         return np.clip(action, -1, 1)
 
-    def reset(self):
-        self.noise.reset()
+    def save(self, directory):
+        """Saves the agent model's trained parameters."""
+
+        filepath = os.path.join(directory, self.savefilename)
+        torch.save({
+            'actor_local': self.actor_local.state_dict(),
+            'critic_local': self.critic_local.state_dict(),
+            'actor_target': self.actor_target.state_dict(),
+            'critic_target': self.critic_target.state_dict(),
+        }, filepath)
+
+    def load(self, directory):
+        """Loads the agent model's trained parameters."""
+
+        filepath = os.path.join(directory, self.savefilename)
+        state_dicts = torch.load(filepath)
+        self.actor_local.load_state_dict(state_dicts['actor_local'])
+        self.critic_local.load_state_dict(state_dicts['critic_local'])
+        self.actor_target.load_state_dict(state_dicts['actor_target'])
+        self.critic_target.load_state_dict(state_dicts['critic_target'])
 
     def _learn(self, experiences, gamma):
 
