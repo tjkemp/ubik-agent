@@ -5,7 +5,11 @@ import numpy as np
 class Agent(abc.ABC):
 
     @abc.abstractmethod
-    def act(self, state, eps=0.):
+    def new_episode(self):
+        pass
+
+    @abc.abstractmethod
+    def act(self, state):
         pass
 
     @abc.abstractmethod

@@ -86,6 +86,9 @@ class DQNAgent(Agent):
         self.eps_decay = eps_decay
         self.timestep = 0
 
+    def new_episode(self):
+        return
+
     def act(self, state, eps=None):
         """Returns action for given state as per current policy.
 
