@@ -118,7 +118,7 @@ class UnityInteraction:
 
             score = 0
 
-            # agent.reset()
+            self._agent.new_episode()
 
             for timestep in range(max_time_steps):
 
@@ -141,8 +141,6 @@ class UnityInteraction:
                 else:
                     score += reward
 
-                # agent.learn(timestep)
-
                 if np.any(done):
                     break
 
@@ -152,20 +150,13 @@ class UnityInteraction:
             best_score = max(scores)
             window_mean = np.mean(scores_window)
 
-            # memory_size = len(agent.memory)
-            memory_size = 1
-            num_learn = 1
-            # num_learn = agent.learn_counter
-
             print(
                 f"\rEpisode {i_episode}\tScore: {score:.2f}\tBest: {best_score:.2f}"
                 f"\tMean: {window_mean:.2f}"
-                f"\tTimesteps: {timestep}\tMem: {memory_size}\tModel updates: {num_learn}")
+                f"\tTimesteps: {timestep}\t")
 
             if window_mean >= target_score:
                 print(f"\nTarget score reached in {i_episode:d} episodes!")
-                # torch.save(agent.actor_local.state_dict(), 'checkpoint_actor.pth')
-                # torch.save(agent.critic_local.state_dict(), 'checkpoint_critic.pth')
                 break
 
         return scores
