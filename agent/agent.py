@@ -55,6 +55,9 @@ class RandomAgent(Agent):
 
         self.expected_state_shape = (self.num_agents, self.space_size)
 
+    def new_episode(self):
+        return
+
     def act(self, state):
         """Returns a random action for agent(s).
 
@@ -76,8 +79,8 @@ class RandomAgent(Agent):
     def step(self, state=None, action=None, reward=None, next_state=None, done=None):
         return
 
-    def save(self):
+    def save(self, directory):
         return
 
-    def load(self):
+    def load(self, directory):
         return
