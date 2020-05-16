@@ -17,11 +17,11 @@ class Agent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def load(self, filename):
+    def load(self, directory):
         pass
 
     @abc.abstractmethod
-    def save(self, filename):
+    def save(self, directory):
         pass
 
 

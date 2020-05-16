@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -24,6 +25,8 @@ class DQNAgent(Agent):
     predicted action values for each possible actions.
 
     """
+    savefilename = 'checkpoint.pth'
+
     def __init__(
             self,
             state_size,
@@ -136,18 +139,20 @@ class DQNAgent(Agent):
 
         self.epsilon = max(self.eps_end, self.eps_decay * self.epsilon)
 
-    def save(self, filename):
+    def save(self, directory):
         """Saves the agent model's trained parameters."""
 
+        filepath = os.path.join(directory, self.savefilename)
         torch.save({
             'qnetwork_local': self.qnetwork_local.state_dict(),
             'qnetwork_target': self.qnetwork_local.state_dict()},
-            filename)
+            filepath)
 
-    def load(self, filename):
+    def load(self, directory):
         """Loads the agent model's trained parameters."""
 
-        state_dicts = torch.load(filename)
+        filepath = os.path.join(directory, self.savefilename)
+        state_dicts = torch.load(filepath)
 
         self.qnetwork_local.load_state_dict(state_dicts['qnetwork_local'])
         self.qnetwork_target.load_state_dict(state_dicts['qnetwork_target'])
