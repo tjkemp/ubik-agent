@@ -62,7 +62,7 @@ class UnityInteraction:
         """
         scores = []
 
-        for idx in range(1, num_episodes + 1):
+        for i_episode in range(1, num_episodes + 1):
 
             env_info = self._env.reset(train_mode=False)[self._brain_name]
             state = env_info.vector_observations
@@ -120,11 +120,10 @@ class UnityInteraction:
 
             self._agent.new_episode()
 
-            for timestep in range(max_time_steps):
+            for timestep in range(1, max_time_steps + 1):
 
                 # choose and execute actions
-                action = self._agent.act(state)  # noise=True)
-                # action = np.clip(action, -1, 1)
+                action = self._agent.act(state)
                 env_info = self._env.step(action)[self._brain_name]
 
                 # observe state and reward
