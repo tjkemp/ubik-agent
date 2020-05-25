@@ -12,19 +12,21 @@ from agent.agent import RandomAgent
 ENV_PATH = './environments/Reacher_Linux/Reacher.x86_64'
 
 MODEL_PARAMS = {
-    'lr_actor': 3e-3,
-    'lr_critic': 3e-3,
+    'lr_actor': 3e-4,
+    'layers_actor': [128, 64],
+    'lr_critic': 3e-4,
+    'layers_critic': [64, 32, 32],
     'batch_size': 512,
-    'tau': 2e-1,
+    'tau': 1e-3,
     'gamma': 0.99,
     'replay_buffer_size': 1e5,
     'seed': 42,
 }
 
 TRAINING_PARAMS = {
-    'num_episodes': 100,
+    'num_episodes': 300,
     'max_time_steps': 1000,
-    'target_score': 2000.0,
+    'target_score': 30.,
 }
 
 
@@ -71,7 +73,7 @@ def run(modelname):
 def random_run():
 
     # create environment
-    env = UnityEnvironment(file_name=ENV_PATH, no_graphics=True)
+    env = UnityEnvironment(file_name=ENV_PATH, no_graphics=False)
 
     # create an agent
     state_size, action_size, num_agents = UnityInteraction.stats(env)

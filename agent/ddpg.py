@@ -78,7 +78,9 @@ class DDPGAgent(Agent):
             action_size,
             num_agents,
             lr_actor=3e-3,
+            layers_actor=[128, 64],
             lr_critic=3e-3,
+            layers_critic=[64, 32, 32],
             batch_size=512,
             tau=2e-1,
             gamma=0.99,
@@ -88,19 +90,43 @@ class DDPGAgent(Agent):
         self.state_size = state_size
         self.action_size = action_size
         self.lr_actor = lr_actor
+        self.layers_actor = layers_actor
         self.lr_critic = lr_critic
+        self.layers_critic = layers_critic
         self.batch_size = batch_size
         self.tau = tau
         self.gamma = gamma
         self.replay_buffer_size = int(replay_buffer_size)
         self.seed = random.seed(seed)
 
-        self.actor_local = Actor(state_size, action_size, seed=seed).to(device)
-        self.actor_target = Actor(state_size, action_size, seed=seed).to(device)
+        self.actor_local = Actor(
+            state_size,
+            action_size,
+            fc_units=layers_actor[0],
+            fc_units2=layers_actor[1],
+            seed=seed).to(device)
+        self.actor_target = Actor(
+            state_size,
+            action_size,
+            fc_units=layers_actor[0],
+            fc_units2=layers_actor[1],
+            seed=seed).to(device)
         self.actor_optimizer = torch.optim.Adam(self.actor_local.parameters(), lr=lr_actor)
 
-        self.critic_local = Critic(state_size, action_size, seed=seed).to(device)
-        self.critic_target = Critic(state_size, action_size, seed=seed).to(device)
+        self.critic_local = Critic(
+            state_size,
+            action_size,
+            fcs1_units=layers_critic[0],
+            fc2_units=layers_critic[1],
+            fc3_units=layers_critic[2],
+            seed=seed).to(device)
+        self.critic_target = Critic(
+            state_size,
+            action_size,
+            fcs1_units=layers_critic[0],
+            fc2_units=layers_critic[1],
+            fc3_units=layers_critic[2],
+            seed=seed).to(device)
         self.critic_optimizer = torch.optim.Adam(self.critic_local.parameters(), lr=lr_critic)
 
         self.noise = OUNoise(action_size, seed)
@@ -131,7 +157,7 @@ class DDPGAgent(Agent):
                 experiences = self.memory.sample()
                 self._learn(experiences, self.gamma)
 
-    def act(self, state, noise=False):
+    def act(self, state, randomness=True):
         """Return action for given state as per current policy."""
 
         state = torch.from_numpy(state).float().to(device)
@@ -141,7 +167,7 @@ class DDPGAgent(Agent):
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
 
-        if noise:
+        if randomness:
             action += self.noise.sample()
 
         return np.clip(action, -1, 1)
@@ -172,6 +198,12 @@ class DDPGAgent(Agent):
         self.learn_counter += 1
 
         states, actions, rewards, next_states, dones = experiences
+
+        states = torch.as_tensor(states, dtype=torch.float)
+        actions = torch.as_tensor(actions, dtype=torch.float)
+        rewards = torch.as_tensor(rewards, dtype=torch.float).unsqueeze(-1)
+        next_states = torch.as_tensor(next_states, dtype=torch.float)
+        dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
         actions_next = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, actions_next)
