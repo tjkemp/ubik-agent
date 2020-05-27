@@ -10,10 +10,11 @@ Currently, I'm working on turning this project into a more general library to tr
 - [x] add DDPG algorithm
 - [x] add pytest tests
 - [x] add Interaction class to serve as a middleman between the environment and the agent, to remove need for custom handling loops
-- [ ] add more environments and an easier way to use and install them
+- [x] add more environments and an easier way to use and install them
 - [ ] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
 - [ ] add Prioritized Experience Replay
 - [ ] add hyperparameter tuning and improve the models
+- [ ] add environments for Sarsa type agents
 - [ ] add capability to train the agent from pixel data
 - [ ] upgrade ML-Agents package to the latest Release 1
 - [ ] add PPO, Dueling DQN and other algorithms (to be decided)
@@ -42,6 +43,10 @@ Four discrete actions are available, corresponding to:
 
 The task is episodic and considered solved when the agent gets an average score of +13 over 100 consecutive episodes.
 
+## Other environments
+
+Currently, also an executable to train and run Reacher and Crawler Unity environments are included (see more information below).
+
 ## Installation
 
 Requirements for running the project are Linux, Python version >= 3.6, Unity ML-agents 0.4.0, and Pytorch 1.4.0.
@@ -69,11 +74,13 @@ Download and unzip the environment binary files with the `download.sh` script.
 ./environments/download.sh banana
 ```
 
+Other arguments for the download script are `reacher` and `crawler` for Reacher and Crawler environments binaries respectively.
+
 Note that running the environment requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
 
 ## Instructions
 
-The project has single python executable: `banana.py`, which is used both for training an agent and running the trained agent.
+Executable `banana.py` is used both for training an agent and running the trained agent in the BananaCollector environment.
 
 To get help on arguments for each executable, run them with `-h` switch, for example:
 
@@ -81,21 +88,17 @@ To get help on arguments for each executable, run them with `-h` switch, for exa
 ./banana.py -h
 ```
 
-### Running an episode with pre-trained agent
+### Running an episode with an agent acting randomly
 
-First, enter the python virtual environment if it's not activated already.
-
-The python executable takes the directory name of the trained agent as an argument. All the trained agents are in directory *models*.
+To test the environment with an agent behaving totally randomly run the executable with argument *random*.
 
 ```bash
-./banana.py run banana
+./banana.py random
 ```
 
 ### Training an agent
 
-First, enter the python virtual environment if it's not activated already.
-
-The python executable takes the directory name of the trained agent as an argument. All the trained agents are in directory *models*.
+The python executable takes the directory name of an instance of trained agent as an argument. All the trained agents are saved into the directory *models*.
 
 ```bash
 ./banana.py train my-cool-agent
@@ -113,6 +116,18 @@ Target score reached in 373 episodes!
 ```
 
 At the end of the training, the agent model will be saved in the *models* directory as `checkpoint.pth`.
+
+### Running an episode with pre-trained agent
+
+The python executable takes the directory name of the trained agent model as an argument. All the trained agents are in directory *models*.
+
+```bash
+./banana.py run my-cool-agent
+```
+
+### Using other included environments
+
+The executable `crawler.py` and `reacher.py` work similarly for the Crawler and Reacher environments.
 
 ## Licenses and acknowledgements
 
