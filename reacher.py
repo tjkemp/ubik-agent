@@ -46,10 +46,10 @@ def train(modelname):
         create_model_dir(modelname)
 
     scores = sim.train(**TRAINING_PARAMS)
-    modelfile = os.path.join(get_model_dir(modelname))
 
     if modelname is not None:
-        agent.save(modelfile)
+        modeldir = os.path.join(get_model_dir(modelname))
+        agent.save(modeldir)
         save_scores(modelname, scores)
 
     env.close()
