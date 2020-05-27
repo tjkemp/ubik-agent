@@ -10,9 +10,11 @@ Currently, I'm working on turning this project into a more general library to tr
 - [x] add DDPG algorithm
 - [x] add pytest tests
 - [x] add Interaction class to serve as a middleman between the environment and the agent, to remove need for custom handling loops
-- [ ] add more environments and an easier way to install them
+- [x] add more environments and an easier way to use and install them
+- [ ] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
 - [ ] add Prioritized Experience Replay
-- [ ] add hyperparameter tuning
+- [ ] add hyperparameter tuning and improve the models
+- [ ] add environments for Sarsa type agents
 - [ ] add capability to train the agent from pixel data
 - [ ] upgrade ML-Agents package to the latest Release 1
 - [ ] add PPO, Dueling DQN and other algorithms (to be decided)
@@ -41,6 +43,10 @@ Four discrete actions are available, corresponding to:
 
 The task is episodic and considered solved when the agent gets an average score of +13 over 100 consecutive episodes.
 
+## Other environments
+
+Currently, also an executable to train and run Reacher and Crawler Unity environments are included (see more information below).
+
 ## Installation
 
 Requirements for running the project are Linux, Python version >= 3.6, Unity ML-agents 0.4.0, and Pytorch 1.4.0.
@@ -62,62 +68,66 @@ pip install --no-deps -r requirements.txt
 
 3. Install Banana Collector environment for Unity
 
-If you want to see the trained agent in the environment on your screen, download and unzip the prepared environment binary files.
+Download and unzip the environment binary files with the `download.sh` script.
 
 ```bash
-wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip
-unzip Banana_Linux.zip
+./environments/download.sh banana
 ```
 
-Note that running the simulation requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
+Other arguments for the download script are `reacher` and `crawler` for Reacher and Crawler environments binaries respectively.
 
-Or, if you instead, want to run the environment without visualization, get the headless version of the environment. You will not be able to watch the agent, but you will be able to train the agent.
-
-```bash
-wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux_NoVis.zip
-unzip Banana_Linux_NoVis.zip
-```
+Note that running the environment requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
 
 ## Instructions
 
-The project has two python executables, `train.py` and `play.py`, for training an agent and simulating one episode.
+Executable `banana.py` is used both for training an agent and running the trained agent in the BananaCollector environment.
 
 To get help on arguments for each executable, run them with `-h` switch, for example:
 
 ```bash
-python play.py -h
+./banana.py -h
 ```
 
-### Running an episode with pre-trained agent
+### Running an episode with an agent acting randomly
 
-First, enter the python virtual environment if it's not activated already.
+To test the environment with an agent behaving totally randomly run the executable with argument *random*.
 
 ```bash
-python play.py --unity_env files/checkpoint.pth
+./banana.py random
 ```
 
 ### Training an agent
 
-First, enter the python virtual environment if it's not activated already.
+The python executable takes the directory name of an instance of trained agent as an argument. All the trained agents are saved into the directory *models*.
 
 ```bash
-python train.py --target_score 13
+./banana.py train my-cool-agent
 ```
 
 Which will output the following (omitting some Unity's messages):
 
 ```
 Creating an agent (state size of 37, and 4 actions).
-Episode 100     Average Score: 0.892    Epsilon: 0.61
-Episode 200     Average Score: 3.79     Epsilon: 0.37
-Episode 300     Average Score: 7.24     Epsilon: 0.22
-Episode 400     Average Score: 10.41    Epsilon: 0.13
-Episode 500     Average Score: 12.39    Epsilon: 0.08
-Episode 533     Average Score: 13.08    Epsilon: 0.07
-Target score reached in 533 episodes!   Average Score: 13.08
+Episode 100     Score: 0.00     Best: 11.00     Mean: 2.10
+Episode 200     Score: 11.00    Best: 17.00     Mean: 8.30
+Episode 300     Score: 19.00    Best: 21.00     Mean: 11.19
+Episode 373     Score: 20.00    Best: 25.00     Mean: 13.03
+Target score reached in 373 episodes!
 ```
 
-At the end of the training, the agent model will be saved in the current directory as `checkpoint.pth`.
+At the end of the training, the agent model will be saved in the *models* directory as `checkpoint.pth`.
+
+### Running an episode with pre-trained agent
+
+The python executable takes the directory name of the trained agent model as an argument. All the trained agents are in directory *models*.
+
+```bash
+./banana.py run my-cool-agent
+```
+
+### Using other included environments
+
+The executable `crawler.py` and `reacher.py` work similarly for the Crawler and Reacher environments.
 
 ## Licenses and acknowledgements
 

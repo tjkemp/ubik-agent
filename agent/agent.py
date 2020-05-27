@@ -5,7 +5,11 @@ import numpy as np
 class Agent(abc.ABC):
 
     @abc.abstractmethod
-    def act(self, state, eps=0.):
+    def new_episode(self):
+        pass
+
+    @abc.abstractmethod
+    def act(self, state):
         pass
 
     @abc.abstractmethod
@@ -13,11 +17,11 @@ class Agent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def load(self, filename):
+    def load(self, directory):
         pass
 
     @abc.abstractmethod
-    def save(self, filename):
+    def save(self, directory):
         pass
 
 
@@ -51,6 +55,9 @@ class RandomAgent(Agent):
 
         self.expected_state_shape = (self.num_agents, self.space_size)
 
+    def new_episode(self):
+        return
+
     def act(self, state):
         """Returns a random action for agent(s).
 
@@ -72,8 +79,8 @@ class RandomAgent(Agent):
     def step(self, state=None, action=None, reward=None, next_state=None, done=None):
         return
 
-    def save(self):
+    def save(self, directory):
         return
 
-    def load(self):
+    def load(self, directory):
         return

@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -5,6 +6,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from .agent import Agent
 from .noise import OUNoise
 from .buffer import ReplayBuffer
 
@@ -65,15 +67,20 @@ class Critic(nn.Module):
         return self.fc4(x)
 
 
-class DDPGAgent(object):
-    """Interacts with and learns from the environment."""
+class DDPGAgent(Agent):
+    """Deep Deterministic Policy Gradient Agent algorithm."""
+
+    savefilename = 'checkpoint.pth'
 
     def __init__(
             self,
             state_size,
             action_size,
+            num_agents,
             lr_actor=3e-3,
+            layers_actor=[128, 64],
             lr_critic=3e-3,
+            layers_critic=[64, 32, 32],
             batch_size=512,
             tau=2e-1,
             gamma=0.99,
@@ -83,37 +90,66 @@ class DDPGAgent(object):
         self.state_size = state_size
         self.action_size = action_size
         self.lr_actor = lr_actor
+        self.layers_actor = layers_actor
         self.lr_critic = lr_critic
+        self.layers_critic = layers_critic
         self.batch_size = batch_size
         self.tau = tau
         self.gamma = gamma
         self.replay_buffer_size = int(replay_buffer_size)
         self.seed = random.seed(seed)
 
-        self.actor_local = Actor(state_size, action_size, seed=seed).to(device)
-        self.actor_target = Actor(state_size, action_size, seed=seed).to(device)
+        self.actor_local = Actor(
+            state_size,
+            action_size,
+            fc_units=layers_actor[0],
+            fc_units2=layers_actor[1],
+            seed=seed).to(device)
+        self.actor_target = Actor(
+            state_size,
+            action_size,
+            fc_units=layers_actor[0],
+            fc_units2=layers_actor[1],
+            seed=seed).to(device)
         self.actor_optimizer = torch.optim.Adam(self.actor_local.parameters(), lr=lr_actor)
 
-        self.critic_local = Critic(state_size, action_size, seed=seed).to(device)
-        self.critic_target = Critic(state_size, action_size, seed=seed).to(device)
+        self.critic_local = Critic(
+            state_size,
+            action_size,
+            fcs1_units=layers_critic[0],
+            fc2_units=layers_critic[1],
+            fc3_units=layers_critic[2],
+            seed=seed).to(device)
+        self.critic_target = Critic(
+            state_size,
+            action_size,
+            fcs1_units=layers_critic[0],
+            fc2_units=layers_critic[1],
+            fc3_units=layers_critic[2],
+            seed=seed).to(device)
         self.critic_optimizer = torch.optim.Adam(self.critic_local.parameters(), lr=lr_critic)
 
         self.noise = OUNoise(action_size, seed)
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
-        self.learn_every = 1
-        self.learn_num_times = 1
+        self.step_counter = 0
         self.learn_counter = 0
 
+        self.learn_every = 1
+        self.learn_num_times = 1
+
+    def new_episode(self):
+        self.noise.reset()
+
     def step(self, states, actions, rewards, next_states, dones):
+
+        self.step_counter += 1
 
         for state, action, reward, next_state, done in zip(states, actions, rewards, next_states, dones):
             self.memory.add(state, action, reward, next_state, done)
 
-    def learn(self, timestep):
-
-        if timestep % self.learn_every == 0:
+        if self.step_counter % self.learn_every == 0:
             if len(self.memory) < self.batch_size:
                 return
 
@@ -121,7 +157,7 @@ class DDPGAgent(object):
                 experiences = self.memory.sample()
                 self._learn(experiences, self.gamma)
 
-    def act(self, state, noise=False):
+    def act(self, state, randomness=True):
         """Return action for given state as per current policy."""
 
         state = torch.from_numpy(state).float().to(device)
@@ -131,19 +167,43 @@ class DDPGAgent(object):
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
 
-        if noise:
+        if randomness:
             action += self.noise.sample()
 
         return np.clip(action, -1, 1)
 
-    def reset(self):
-        self.noise.reset()
+    def save(self, directory):
+        """Saves the agent model's trained parameters."""
+
+        filepath = os.path.join(directory, self.savefilename)
+        torch.save({
+            'actor_local': self.actor_local.state_dict(),
+            'critic_local': self.critic_local.state_dict(),
+            'actor_target': self.actor_target.state_dict(),
+            'critic_target': self.critic_target.state_dict(),
+        }, filepath)
+
+    def load(self, directory):
+        """Loads the agent model's trained parameters."""
+
+        filepath = os.path.join(directory, self.savefilename)
+        state_dicts = torch.load(filepath)
+        self.actor_local.load_state_dict(state_dicts['actor_local'])
+        self.critic_local.load_state_dict(state_dicts['critic_local'])
+        self.actor_target.load_state_dict(state_dicts['actor_target'])
+        self.critic_target.load_state_dict(state_dicts['critic_target'])
 
     def _learn(self, experiences, gamma):
 
         self.learn_counter += 1
 
         states, actions, rewards, next_states, dones = experiences
+
+        states = torch.as_tensor(states, dtype=torch.float)
+        actions = torch.as_tensor(actions, dtype=torch.float)
+        rewards = torch.as_tensor(rewards, dtype=torch.float).unsqueeze(-1)
+        next_states = torch.as_tensor(next_states, dtype=torch.float)
+        dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
         actions_next = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, actions_next)
