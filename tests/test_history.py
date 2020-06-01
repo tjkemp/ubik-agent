@@ -2,7 +2,8 @@ from collections import namedtuple
 
 import pytest
 
-from agent.history import TrainingHistory
+from agent.history import History
+
 
 class TestHistory:
     """Tests the class `History` which provides training history for the
@@ -10,8 +11,7 @@ class TestHistory:
 
     def test_properties(self):
 
-        hist = TrainingHistory()
-        hist.start_training()
+        hist = History()
 
         episode_length = [1, 2]
         episode_rewards = [[4.0, 5.0], [2.0, 4.0]]
@@ -24,6 +24,3 @@ class TestHistory:
         assert hist.prev_reward_min == 2.0
         assert hist.prev_reward_mean == 3.0
         assert hist.prev_reward_std == 1.0
-
-    def test_score_calculation(self):
-        assert False

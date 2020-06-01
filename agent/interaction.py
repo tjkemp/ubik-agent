@@ -1,7 +1,7 @@
 import numpy as np
 
 from .agent import Agent
-from .history import TrainingHistory
+from .history import History
 
 class UnityInteraction:
     """Class facilitates the interaction between an agent and a UnityEnvironment."""
@@ -19,7 +19,7 @@ class UnityInteraction:
         self._brain_name = env.brain_names[0]
         info = self.__class__.stats(env)
         self._state_size, self._action_size, self._num_agents = info
-        self.history = TrainingHistory()
+        self.history = History()
 
     @staticmethod
     def stats(env, brain_name=None):
@@ -56,37 +56,40 @@ class UnityInteraction:
             max_time_steps (int): maximum number of timesteps to play
 
         Returns:
-            list: cumulative rewards for each episode
+            dict: episode lengths and rewards for each episode
 
         """
-        scores = []
+        history = History()
 
         for i_episode in range(1, num_episodes + 1):
 
             env_info = self._env.reset(train_mode=False)[self._brain_name]
-            state = env_info.vector_observations
-            score = np.zeros(self._num_agents)
+            states = env_info.vector_observations
+
+            episode_rewards = np.zeros(self.num_agents)
 
             for timestep in range(1, max_time_steps + 1):
 
                 # choose and execute an action in the environment
-                action = self._agent.act(state)
-                env_info = self._env.step(action)[self._brain_name]
+                actions = self._agent.act(states)
+                env_info = self._env.step(actions)[self._brain_name]
 
                 # observe the state and the reward
-                next_state = env_info.vector_observations
-                reward = env_info.rewards
-                ended = env_info.local_done
+                next_states = env_info.vector_observations
+                rewards = env_info.rewards
+                dones = env_info.local_done
 
-                score += reward
-                state = next_state
+                # score += reward
+                episode_rewards += rewards
 
-                if np.any(ended):
+                states = next_states
+
+                if np.any(dones):
                     break
 
-            scores.append(np.max(score))
+            history.update(timestep, episode_rewards)
 
-        return scores
+        return history.as_dict()
 
     def train(
             self,
@@ -109,10 +112,10 @@ class UnityInteraction:
             Alters the state of `agent` and `env`.
 
         Returns:
-            list: sum of all rewards per episode
+            dict: episode lengths and rewards for each episode
 
         """
-        self.history.start_training(score_window_size=score_window_size)
+
         if score_target is None:
             score_target = float('inf')
 

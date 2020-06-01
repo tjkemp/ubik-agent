@@ -60,10 +60,14 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.run(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.run(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps
 
     def test_training_reacher_returns_scores(self):
 
@@ -84,7 +88,6 @@ class TestInteraction:
         history = sim.train(
             num_episodes=num_episodes,
             max_time_steps=max_time_steps)
-
         env.close()
 
         assert len(history['episode_length']) == num_episodes
@@ -105,10 +108,14 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.run(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.run(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps
 
     def test_training_banana_returns_scores(self):
 
@@ -129,7 +136,6 @@ class TestInteraction:
         history = sim.train(
             num_episodes=num_episodes,
             max_time_steps=max_time_steps)
-
         env.close()
 
         assert len(history['episode_length']) == num_episodes
