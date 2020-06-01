@@ -26,7 +26,7 @@ MODEL_PARAMS = {
 TRAINING_PARAMS = {
     'num_episodes': 300,
     'max_time_steps': 1000,
-    'target_score': 2000.0,
+    'score_target': 2000.0,
 }
 
 

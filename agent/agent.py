@@ -64,6 +64,13 @@ class RandomAgent(Agent):
         Args:
             state (np.ndarray): the input is disregarded, only shape is checked
 
+        Raises:
+            TypeError: if state shape does not match expectation
+
+        Returns:
+            np.ndarray: a random move, an integer (for discrete agent) or array
+                of floats for continuous agent
+
         """
         if np.shape(state) != self.expected_state_shape:
             raise TypeError("input shape does not match expectation")

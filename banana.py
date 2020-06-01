@@ -25,7 +25,7 @@ MODEL_PARAMS = {
 TRAINING_PARAMS = {
     'num_episodes': 500,
     'max_time_steps': 300,
-    'target_score': 13.0,
+    'score_target': 13.0,
 }
 
 def train(modelname):
