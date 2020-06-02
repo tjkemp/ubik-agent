@@ -65,6 +65,7 @@ class RandomAgent(Agent):
         return
 
     def new_episode(self):
+        # RandomAgent has no metrics to output
         return
 
     def act(self, state):

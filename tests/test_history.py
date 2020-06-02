@@ -10,7 +10,6 @@ class TestHistory:
     `Interaction` class."""
 
     def test_properties(self):
-
         hist = History()
 
         episode_length = [1, 2]
@@ -19,8 +18,18 @@ class TestHistory:
             hist.update(length, rewards)
 
         assert hist.num_episodes == 2
-        assert hist.prev_episode_length == 2
-        assert hist.prev_reward_max == 4.0
-        assert hist.prev_reward_min == 2.0
-        assert hist.prev_reward_mean == 3.0
-        assert hist.prev_reward_std == 1.0
+        assert hist.episode_length == 2
+        assert hist.reward_max == 4.0
+        assert hist.reward_min == 2.0
+        assert hist.reward_mean == 3.0
+        assert hist.reward_std == 1.0
+
+    def test_add_and_get_key(self):
+        hist = History()
+
+        expected_output = 2.0
+        hist.add_from({'test_key': 1.0})
+        hist.add_from({'test_key': expected_output})
+        output = hist.get_latest('test_key')
+
+        assert output == expected_output

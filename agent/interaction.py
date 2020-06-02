@@ -119,14 +119,12 @@ class UnityInteraction:
         """
 
         self._agent.exploration(True)
+        self._agent.new_episode()
 
         if score_target is None:
             score_target = float('inf')
 
         for i_episode in range(1, num_episodes + 1):
-
-            # prepare an agent, environment and reward calculations for a new episode
-            self._agent.new_episode()
 
             env_info = self._env.reset(train_mode=True)[self._brain_name]
             states = env_info.vector_observations
@@ -154,12 +152,16 @@ class UnityInteraction:
                 if np.any(dones):
                     break
 
+            agent_metrics = self._agent.new_episode()
+            if isinstance(agent_metrics, dict):
+                self.history.add_from(agent_metrics)
+
             self.history.update(timestep, episode_rewards)
 
             if verbose:
                 self._print_episode_statistics()
 
-            if self.history.prev_score >= score_target:
+            if self.history.score >= score_target:
                 if verbose:
                     self._print_target_reached()
                 break
@@ -169,21 +171,30 @@ class UnityInteraction:
     def _print_episode_statistics(self):
         """Prints a single row of statistics on episode performance."""
 
+        print()
+        print(f"Episode {self.history.num_episodes}", end='')
+
+        if self.history.episode_length is not None:
+            print(f" \tSteps: {self.history.episode_length}", end='')
+        if self.history.loss is not None:
+            print(f" \tLoss: {self.history.loss:.5f}", end='')
+        if self.history.epsilon is not None:
+            print(f" \tEpsilon: {self.history.epsilon:.3f}", end='')
+        if self.history.score is not None:
+            print(f" \tScore: {self.history.score:.2f}", end='')
+
         if self.num_agents > 1:
-            print(
-                f"\rEpisode {self.history.num_episodes}"
-                f" \tSteps: {self.history.prev_episode_length}"
-                f" \tMax: {self.history.prev_reward_max:.2f}"
-                f" \tMin: {self.history.prev_reward_min:.2f}"
-                f" \tMean: {self.history.prev_reward_mean:.2f}"
-                f" \tStd: {self.history.prev_reward_std:.2f}"
-                f" \tScore: {self.history.prev_score:.2f}")
+            if self.history.reward_max is not None:
+                print(f" \tMax: {self.history.reward_max:.2f}", end='')
+            if self.history.reward_min is not None:
+                print(f" \tMin: {self.history.reward_min:.2f}", end='')
+            if self.history.reward_mean is not None:
+                print(f" \tMean: {self.history.reward_mean:.2f}", end='')
+            if self.history.reward_std is not None:
+                print(f" \tStd: {self.history.reward_std:.2f}", end='')
         else:
-            print(
-                f"\rEpisode {self.history.num_episodes}"
-                f" \tSteps: {self.history.prev_episode_length}"
-                f" \tReward: {self.history.prev_reward_max:.2f}"
-                f" \tScore: {self.history.prev_score:.2f}")
+            if self.history.reward_max is not None:
+                print(f" \tRewards: {self.history.reward_max:.2f}", end='')
 
     def _print_target_reached(self):
         """Prints a notification that target score has been reached."""

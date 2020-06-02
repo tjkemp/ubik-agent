@@ -20,49 +20,38 @@ class History:
         """Resets internal training history."""
 
         self._scores_window = deque(maxlen=self.score_window_size)
-        self._history = {
-            'episode_length': [],
-            'reward_max': [],
-            'reward_min': [],
-            'reward_mean': [],
-            'reward_std': [],
-            'score': []}
+        self._history = {}
 
     @property
     def num_episodes(self):
         """Return the amount of episodes trained."""
         return len(self._history['episode_length'])
 
-    @property
-    def prev_episode_length(self):
-        """Previous episode's length."""
-        return self._history['episode_length'][-1]
+    def keys(self):
+        """Return keys to all the metrics in the history."""
+        return self._history.keys()
 
-    @property
-    def prev_reward_max(self):
-        """Previous episode's max total reward collected by an agent."""
-        return self._history['reward_max'][-1]
+    def __getattr__(self, key):
+        """Syntactic sugar for `get_latest()` so that latest items can be
+        printed more cleanly in f-strings."""
+        return self.get_latest(key)
 
-    @property
-    def prev_reward_min(self):
-        """Previous episode's min total reward collected by an agent."""
-        return self._history['reward_min'][-1]
+    def get_latest(self, key):
+        """Return last item in the history for a given key.
 
-    @property
-    def prev_reward_mean(self):
-        """Previous episode's mean total reward collected by the agent(s)."""
-        return self._history['reward_mean'][-1]
+        If the key does not exist, returns None.
 
-    @property
-    def prev_reward_std(self):
-        """Previous episode's standard deviation for total rewards collected
-        by the agent(s)."""
-        return self._history['reward_std'][-1]
+        Args:
+            key (str): metric name
 
-    @property
-    def prev_score(self):
-        """Previous episode's score by the agent(s)."""
-        return self._history['score'][-1]
+        """
+        try:
+            return self._history[key][-1]
+        except KeyError:
+            pass
+        except IndexError:
+            pass
+        return None
 
     def as_dict(self):
         """Returns the training history as a dictionary."""
@@ -77,12 +66,26 @@ class History:
                 by each agent
 
         """
+
+        keys = [
+            'episode_length',
+            'reward_max',
+            'reward_min',
+            'reward_mean',
+            'reward_std',
+            'score']
+
+        for key in keys:
+            if key not in self._history:
+                self._history[key] = []
+
+        self._history['episode_length'].append(episode_length)
+
         reward_episode_max = np.max(episode_rewards)
         reward_episode_min = np.min(episode_rewards)
         reward_episode_mean = np.mean(episode_rewards)
         reward_episode_std = np.std(episode_rewards)
 
-        self._history['episode_length'].append(episode_length)
         self._history['reward_max'].append(reward_episode_max)
         self._history['reward_min'].append(reward_episode_min)
         self._history['reward_mean'].append(reward_episode_mean)
@@ -91,14 +94,30 @@ class History:
         score = self._calculate_score(episode_rewards)
         self._history['score'].append(score)
 
+    def add_from(self, metrics):
+        """Adds episode related metrics into history from a dictionary.
+
+        This function should be called at the beginning or at the end
+        of each episode to store new value for that episode.
+
+        Args:
+            metrics (dict): string key with int/float value
+
+        """
+        for key, value in metrics.items():
+            try:
+                self._history[key].append(value)
+            except KeyError:
+                self._history[key] = [value]
+
     def _calculate_score(self, episode_rewards):
         """Calculates training score for `update()`.
 
         To calculate the score, for each episode, the total reward
         received by the best agent is stored. The score is the
         mean of those rewards received during the last 100 episodes.
-        """
 
+        """
         reward_episode_max = np.max(episode_rewards)
         self._scores_window.append(reward_episode_max)
         score_window_mean = np.mean(self._scores_window)

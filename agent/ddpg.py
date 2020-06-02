@@ -1,5 +1,7 @@
 import os
 import random
+from collections import deque
+from statistics import mean
 
 import numpy as np
 import torch
@@ -140,8 +142,33 @@ class DDPGAgent(Agent):
         self.learn_every = 1
         self.learn_num_times = 1
 
+        self._actor_losses = deque()
+        self._critic_losses = deque()
+
     def new_episode(self):
+        """Returns statistics on the previous episode."""
+
         self.noise.reset()
+
+        if len(self._actor_losses) > 0:
+            loss_actor = mean(self._actor_losses)
+            loss_actor_max = max(self._actor_losses)
+            loss_critic = mean(self._critic_losses)
+            loss_critic_max = max(self._critic_losses)
+        else:
+            loss_actor, loss_actor_max = 0., 0.
+            loss_critic, loss_critic_max = 0., 0.
+
+        history = {
+            'loss_actor': loss_actor,
+            'loss_actor_max': loss_actor_max,
+            'loss_critic': loss_critic,
+            'loss_critic_max': loss_critic_max,
+        }
+
+        self._actor_losses = deque()
+        self._critic_losses = deque()
+        return history
 
     def exploration(self, boolean):
         """Controls whether randomness is added to chosen actions.
@@ -169,7 +196,7 @@ class DDPGAgent(Agent):
 
     def act(self, state):
         """Return action for given state as per current policy.
-        
+
         If exploration is turned on, adds some noise to the action.
 
         """
@@ -238,6 +265,9 @@ class DDPGAgent(Agent):
 
         self._soft_update(self.critic_local, self.critic_target, self.tau)
         self._soft_update(self.actor_local, self.actor_target, self.tau)
+
+        self._actor_losses.append(actor_loss.float().item())
+        self._critic_losses.append(critic_loss.float().item())
 
     def _soft_update(self, local_model, target_model, tau):
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
