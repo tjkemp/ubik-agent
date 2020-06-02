@@ -11,11 +11,11 @@ Currently, I'm working on turning this project into a more general library to tr
 - [x] add pytest tests
 - [x] add Interaction class to serve as a middleman between the environment and the agent, to remove need for custom handling loops
 - [x] add more environments and an easier way to use and install them
-- [ ] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
-- [ ] add Prioritized Experience Replay
+- [x] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
 - [ ] add hyperparameter tuning and improve the models
+- [ ] add Prioritized Experience Replay
 - [ ] add environments for Sarsa type agents
-- [ ] add capability to train the agent from pixel data
+- [ ] add an example of training and agent from pixel data
 - [ ] upgrade ML-Agents package to the latest Release 1
 - [ ] add PPO, Dueling DQN and other algorithms (to be decided)
 
