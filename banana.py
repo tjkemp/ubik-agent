@@ -6,7 +6,8 @@ from unityagents import UnityEnvironment
 import numpy as np
 
 from agent.interaction import UnityInteraction
-from agent.helper import get_model_dir, create_model_dir, save_scores
+from agent.helper import (
+    get_model_dir, create_model_dir, save_graph, save_history)
 from agent import DQNAgent
 from agent.agent import RandomAgent
 
@@ -37,18 +38,19 @@ def train(modelname):
     state_size, action_size, num_agents = UnityInteraction.stats(env)
     agent = DQNAgent(state_size, action_size, num_agents, **MODEL_PARAMS)
 
-    # create train or run loop
+    # and create an interaction between them
     sim = UnityInteraction(agent, env)
 
     if modelname is not None:
         create_model_dir(modelname)
 
-    scores = sim.train(**TRAINING_PARAMS)
+    history = sim.train(**TRAINING_PARAMS)
 
     if modelname is not None:
         modeldir = os.path.join(get_model_dir(modelname))
         agent.save(modeldir)
-        save_scores(modelname, scores)
+        save_history(modelname, history)
+        save_graph(modelname, history['score'])
 
     env.close()
 
@@ -63,9 +65,10 @@ def run(modelname):
     modelfile = os.path.join(get_model_dir(modelname))
     agent.load(modelfile)
 
-    # create train or run loop
+    # run simulation
     sim = UnityInteraction(agent, env)
     sim.run()
+
     env.close()
 
 def random_run():
