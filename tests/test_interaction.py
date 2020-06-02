@@ -10,7 +10,8 @@ from agent.agent import RandomAgent
 class TestInteraction:
     """Tests Interaction class with a randomly behaving agent and a mock Unity environment.
 
-    These tests are end-to-end type of tests, testing several components at once.
+    These tests are integration type of tests (testing several components at once). Aim is
+    to not check for specific outputs, but to check nothing crashes.
 
     """
     twenty_reachers_config = {
@@ -59,10 +60,14 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.run(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.run(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps
 
     def test_training_reacher_returns_scores(self):
 
@@ -79,10 +84,14 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.train(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.train(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps
 
     def test_running_banana_returns_scores(self):
 
@@ -99,10 +108,14 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.run(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.run(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps
 
     def test_training_banana_returns_scores(self):
 
@@ -119,7 +132,11 @@ class TestInteraction:
         sim = UnityInteraction(agent, env)
 
         num_episodes = 2
-        scores = sim.train(num_episodes=num_episodes, max_time_steps=2)
+        max_time_steps = 2
+        history = sim.train(
+            num_episodes=num_episodes,
+            max_time_steps=max_time_steps)
         env.close()
 
-        assert len(scores) == num_episodes
+        assert len(history['episode_length']) == num_episodes
+        assert history['episode_length'][0] == max_time_steps

@@ -1,5 +1,7 @@
 import os
 import random
+from collections import deque
+from statistics import mean
 
 import numpy as np
 import torch
@@ -84,13 +86,42 @@ class DQNAgent(Agent):
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
+        self.explore = True
         self.epsilon = eps_start
         self.eps_end = eps_end
         self.eps_decay = eps_decay
         self.timestep = 0
 
+        self.eps_at_episode_start = eps_start
+        self._loss_history = deque()
+
     def new_episode(self):
-        return
+        """Returns statistics on the previous episode."""
+
+        if len(self._loss_history) > 0:
+            loss = mean(self._loss_history)
+            loss_max = max(self._loss_history)
+        else:
+            loss, loss_max = 0., 0.
+
+        history = {
+            'epsilon': self.eps_at_episode_start,
+            'loss': loss,
+            'loss_max': loss_max
+        }
+
+        self.eps_at_episode_start = self.epsilon
+        self._loss_history.clear()
+        return history
+
+    def exploration(self, boolean):
+        """Controls whether randomness is added to chosen actions.
+
+        Args:
+            boolean (bool): True or False, default True
+
+        """
+        self.explore = bool(boolean)
 
     def act(self, state, eps=None):
         """Returns action for given state as per current policy.
@@ -98,6 +129,9 @@ class DQNAgent(Agent):
         Uses epsilon-greedy action selection. When epsilon is 1.0,
         the action is totally random. When epsilon is 0.0 the returned
         action is always the best action according the current policy.
+
+        If exploration is turned off, epsilon-greedy action selection
+        is disabled and actions are deterministic.
 
         Args:
             state (array_like): current state
@@ -110,7 +144,7 @@ class DQNAgent(Agent):
 
         epsilon = eps if eps is not None else self.epsilon
 
-        if random.random() > epsilon:
+        if not self.explore or random.random() > epsilon:
 
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             self.qnetwork_local.eval()
@@ -120,8 +154,7 @@ class DQNAgent(Agent):
 
             return np.argmax(action_values.cpu().data.numpy())
 
-        else:
-            return random.choice(np.arange(self.action_size))
+        return random.randrange(self.action_size)
 
     def step(self, state, action, reward, next_state, done):
         """Informs the agent of the consequences of an action so that
@@ -176,7 +209,6 @@ class DQNAgent(Agent):
         dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
         Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
-
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
         Q_expected = self.qnetwork_local(states).gather(1, actions)
 
@@ -186,6 +218,8 @@ class DQNAgent(Agent):
         self.optimizer.step()
 
         self._soft_update(self.qnetwork_local, self.qnetwork_target, self.tau)
+
+        self._loss_history.append(loss.float().item())
 
     def _soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.

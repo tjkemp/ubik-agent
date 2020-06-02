@@ -5,7 +5,8 @@ import argparse
 from unityagents import UnityEnvironment
 
 from agent.interaction import UnityInteraction
-from agent.helper import get_model_dir, create_model_dir, save_scores
+from agent.helper import (
+    get_model_dir, create_model_dir, save_graph, save_history)
 from agent.ddpg import DDPGAgent
 from agent.agent import RandomAgent
 
@@ -26,7 +27,7 @@ MODEL_PARAMS = {
 TRAINING_PARAMS = {
     'num_episodes': 300,
     'max_time_steps': 1000,
-    'target_score': 30.,
+    'score_target': 30.,
 }
 
 
@@ -39,18 +40,19 @@ def train(modelname):
     state_size, action_size, num_agents = UnityInteraction.stats(env)
     agent = DDPGAgent(state_size, action_size, num_agents, **MODEL_PARAMS)
 
-    # create train or run loop
+    # and create an interaction between them
     sim = UnityInteraction(agent, env)
 
     if modelname is not None:
         create_model_dir(modelname)
 
-    scores = sim.train(**TRAINING_PARAMS)
+    history = sim.train(**TRAINING_PARAMS)
 
     if modelname is not None:
         modeldir = os.path.join(get_model_dir(modelname))
         agent.save(modeldir)
-        save_scores(modelname, scores)
+        save_history(modelname, history)
+        save_graph(modelname, history['score'])
 
     env.close()
 

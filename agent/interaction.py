@@ -1,9 +1,7 @@
-from collections import deque
-
 import numpy as np
 
 from .agent import Agent
-
+from .history import History
 
 class UnityInteraction:
     """Class facilitates the interaction between an agent and a UnityEnvironment."""
@@ -21,6 +19,7 @@ class UnityInteraction:
         self._brain_name = env.brain_names[0]
         info = self.__class__.stats(env)
         self._state_size, self._action_size, self._num_agents = info
+        self.history = History()
 
     @staticmethod
     def stats(env, brain_name=None):
@@ -57,105 +56,146 @@ class UnityInteraction:
             max_time_steps (int): maximum number of timesteps to play
 
         Returns:
-            list: cumulative rewards for each episode
+            dict: episode lengths and rewards for each episode
 
         """
-        scores = []
+        self._agent.exploration(False)
+
+        history = History()
 
         for i_episode in range(1, num_episodes + 1):
 
             env_info = self._env.reset(train_mode=False)[self._brain_name]
-            state = env_info.vector_observations
-            score = np.zeros(self._num_agents)
+            states = env_info.vector_observations
+
+            episode_rewards = np.zeros(self.num_agents)
 
             for timestep in range(1, max_time_steps + 1):
 
                 # choose and execute an action in the environment
-                action = self._agent.act(state)
-                env_info = self._env.step(action)[self._brain_name]
+                actions = self._agent.act(states)
+                env_info = self._env.step(actions)[self._brain_name]
 
                 # observe the state and the reward
-                next_state = env_info.vector_observations
-                reward = env_info.rewards
-                ended = env_info.local_done
+                next_states = env_info.vector_observations
+                rewards = env_info.rewards
+                dones = env_info.local_done
 
-                score += reward
-                state = next_state
+                # score += reward
+                episode_rewards += rewards
 
-                if np.any(ended):
+                states = next_states
+
+                if np.any(dones):
                     break
 
-            scores.append(np.max(score))
+            history.update(timestep, episode_rewards)
 
-        return scores
+        return history.as_dict()
 
     def train(
             self,
             num_episodes=1,
-            max_time_steps=1000,
-            target_score=0.5):
+            max_time_steps=100,
+            score_target=None,
+            score_window_size=100,
+            verbose=1):
         """Trains the agent in the environment for a given number of episodes.
 
         Args:
             num_episodes (int): maximum number of training episodes
             max_time_steps (int): maximum number of timesteps per episode
-            target_score (float): target score at which to end training
+            score_target (float): max total rewards collected during an episode
+                at which to end training
+            score_window_size (int): moving window size to calculate `score_target`
+            verbose (bool): amount of printed output, if > 0 print progress bar
 
         Side effects:
             Alters the state of `agent` and `env`.
 
         Returns:
-            list: sum of all rewards per episode
+            dict: episode lengths and rewards for each episode
 
         """
-        scores = []
-        scores_window = deque(maxlen=100)
+
+        self._agent.exploration(True)
+        self._agent.new_episode()
+
+        if score_target is None:
+            score_target = float('inf')
 
         for i_episode in range(1, num_episodes + 1):
 
             env_info = self._env.reset(train_mode=True)[self._brain_name]
-            state = env_info.vector_observations
+            states = env_info.vector_observations
 
-            score = 0
-
-            self._agent.new_episode()
+            episode_rewards = np.zeros(self.num_agents)
 
             for timestep in range(1, max_time_steps + 1):
 
                 # choose and execute actions
-                action = self._agent.act(state)
-                env_info = self._env.step(action)[self._brain_name]
+                actions = self._agent.act(states)
+                env_info = self._env.step(actions)[self._brain_name]
 
                 # observe state and reward
-                next_state = env_info.vector_observations
-                reward = env_info.rewards
-                done = env_info.local_done
+                next_states = env_info.vector_observations
+                rewards = env_info.rewards
+                dones = env_info.local_done
 
-                # save action, obervation and reward for learning
-                self._agent.step(state, action, reward, next_state, done)
-                state = next_state
+                # save action, observation and reward for learning
+                # TODO: DQNAgent only saves the first
+                self._agent.step(states, actions, rewards, next_states, dones)
+                states = next_states
 
-                if isinstance(reward, list):
-                    score += max(reward)
-                else:
-                    score += reward
+                episode_rewards += rewards
 
-                if np.any(done):
+                if np.any(dones):
                     break
 
-            scores.append(score)
-            scores_window.append(score)
+            agent_metrics = self._agent.new_episode()
+            if isinstance(agent_metrics, dict):
+                self.history.add_from(agent_metrics)
 
-            best_score = max(scores)
-            window_mean = np.mean(scores_window)
+            self.history.update(timestep, episode_rewards)
 
-            print(
-                f"\rEpisode {i_episode}\tScore: {score:.2f}\tBest: {best_score:.2f}"
-                f"\tMean: {window_mean:.2f}"
-                f"\tTimesteps: {timestep}\t")
+            if verbose:
+                self._print_episode_statistics()
 
-            if window_mean >= target_score:
-                print(f"\nTarget score reached in {i_episode:d} episodes!")
+            if self.history.score >= score_target:
+                if verbose:
+                    self._print_target_reached()
                 break
 
-        return scores
+        return self.history.as_dict()
+
+    def _print_episode_statistics(self):
+        """Prints a single row of statistics on episode performance."""
+
+        print()
+        print(f"Episode {self.history.num_episodes}", end='')
+
+        if self.history.episode_length is not None:
+            print(f" \tSteps: {self.history.episode_length}", end='')
+        if self.history.loss is not None:
+            print(f" \tLoss: {self.history.loss:.5f}", end='')
+        if self.history.epsilon is not None:
+            print(f" \tEpsilon: {self.history.epsilon:.3f}", end='')
+        if self.history.score is not None:
+            print(f" \tScore: {self.history.score:.2f}", end='')
+
+        if self.num_agents > 1:
+            if self.history.reward_max is not None:
+                print(f" \tMax: {self.history.reward_max:.2f}", end='')
+            if self.history.reward_min is not None:
+                print(f" \tMin: {self.history.reward_min:.2f}", end='')
+            if self.history.reward_mean is not None:
+                print(f" \tMean: {self.history.reward_mean:.2f}", end='')
+            if self.history.reward_std is not None:
+                print(f" \tStd: {self.history.reward_std:.2f}", end='')
+        else:
+            if self.history.reward_max is not None:
+                print(f" \tRewards: {self.history.reward_max:.2f}", end='')
+
+    def _print_target_reached(self):
+        """Prints a notification that target score has been reached."""
+        print(f"\nTarget score reached in {self.history.num_episodes:d} episodes!")

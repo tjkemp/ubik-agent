@@ -24,6 +24,10 @@ class Agent(abc.ABC):
     def save(self, directory):
         pass
 
+    @abc.abstractmethod
+    def exploration(self, boolean):
+        pass
+
 
 class RandomAgent(Agent):
     """Agent which acts randomly and does not learn.
@@ -52,10 +56,16 @@ class RandomAgent(Agent):
         self.action_size = action_size
         self.action_type = action_type
         self.num_agents = num_agents
+        self.randomness = True
 
         self.expected_state_shape = (self.num_agents, self.space_size)
 
+    def exploration(self, boolean):
+        # RandomAgent acts always randomly, it cannot be changed
+        return
+
     def new_episode(self):
+        # RandomAgent has no metrics to output
         return
 
     def act(self, state):
@@ -63,6 +73,13 @@ class RandomAgent(Agent):
 
         Args:
             state (np.ndarray): the input is disregarded, only shape is checked
+
+        Raises:
+            TypeError: if state shape does not match expectation
+
+        Returns:
+            np.ndarray: a random move, an integer (for discrete agent) or array
+                of floats for continuous agent
 
         """
         if np.shape(state) != self.expected_state_shape:
