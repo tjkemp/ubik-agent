@@ -96,7 +96,8 @@ class DQNAgent(Agent):
     def exploration(self, boolean):
         """Controls whether randomness is added to chosen actions.
 
-        boolean (bool): True or False, default True
+        Args:
+            boolean (bool): True or False, default True
 
         """
         self.explore = bool(boolean)
@@ -107,6 +108,9 @@ class DQNAgent(Agent):
         Uses epsilon-greedy action selection. When epsilon is 1.0,
         the action is totally random. When epsilon is 0.0 the returned
         action is always the best action according the current policy.
+
+        If exploration is turned off, epsilon-greedy action selection
+        is disabled and actions are deterministic.
 
         Args:
             state (array_like): current state

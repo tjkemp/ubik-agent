@@ -146,7 +146,8 @@ class DDPGAgent(Agent):
     def exploration(self, boolean):
         """Controls whether randomness is added to chosen actions.
 
-        boolean (bool): True or False, default True
+        Args:
+            boolean (bool): True or False, default True
 
         """
         self.explore = bool(boolean)
@@ -167,8 +168,11 @@ class DDPGAgent(Agent):
                 self._learn(experiences, self.gamma)
 
     def act(self, state):
-        """Return action for given state as per current policy."""
+        """Return action for given state as per current policy.
+        
+        If exploration is turned on, adds some noise to the action.
 
+        """
         state = torch.from_numpy(state).float().to(device)
 
         self.actor_local.eval()
