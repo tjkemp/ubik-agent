@@ -59,6 +59,8 @@ class UnityInteraction:
             dict: episode lengths and rewards for each episode
 
         """
+        self._agent.exploration(False)
+
         history = History()
 
         for i_episode in range(1, num_episodes + 1):
@@ -115,6 +117,8 @@ class UnityInteraction:
             dict: episode lengths and rewards for each episode
 
         """
+
+        self._agent.exploration(True)
 
         if score_target is None:
             score_target = float('inf')

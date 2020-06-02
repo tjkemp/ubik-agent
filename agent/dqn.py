@@ -84,6 +84,7 @@ class DQNAgent(Agent):
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
+        self.explore = True
         self.epsilon = eps_start
         self.eps_end = eps_end
         self.eps_decay = eps_decay
@@ -91,6 +92,14 @@ class DQNAgent(Agent):
 
     def new_episode(self):
         return
+
+    def exploration(self, boolean):
+        """Controls whether randomness is added to chosen actions.
+
+        boolean (bool): True or False, default True
+
+        """
+        self.explore = bool(boolean)
 
     def act(self, state, eps=None):
         """Returns action for given state as per current policy.
@@ -110,7 +119,7 @@ class DQNAgent(Agent):
 
         epsilon = eps if eps is not None else self.epsilon
 
-        if random.random() > epsilon:
+        if not self.explore or random.random() > epsilon:
 
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             self.qnetwork_local.eval()
@@ -120,8 +129,7 @@ class DQNAgent(Agent):
 
             return np.argmax(action_values.cpu().data.numpy())
 
-        else:
-            return random.choice(np.arange(self.action_size))
+        return random.randrange(self.action_size)
 
     def step(self, state, action, reward, next_state, done):
         """Informs the agent of the consequences of an action so that
