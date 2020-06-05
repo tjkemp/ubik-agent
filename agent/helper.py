@@ -30,3 +30,28 @@ def save_history(model_name, history, filename='history.json'):
     save_path = os.path.join(get_model_dir(model_name), filename)
     with open(save_path, 'w+') as output_file:
         output_file.write(str_data)
+
+def print_episode_statistics(history, multi_agent=False):
+    """Prints a single row of statistics on episode performance."""
+
+    human_readable = {
+        'episode_length': "Steps",
+    }
+
+    print(f"Episode {history.num_episodes}", end='')
+
+    for key in history.keys():
+
+        metric_value = history.get_latest(key)
+        if key in human_readable:
+            metric_name = human_readable[key]
+        else:
+            metric_name = key.capitalize()
+
+        print(f" \t{metric_name}: {metric_value:.2f}", end='')
+
+    print()
+
+def print_target_reached(history):
+    """Prints a notification that target score has been reached."""
+    print(f"\nTarget score reached in {history.num_episodes:d} episodes!")
