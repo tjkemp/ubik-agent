@@ -4,7 +4,15 @@
 
 This project started as an excercise in training a Deep Q-Learning agent to navigate in BananaCollector 3D Unity environment.
 
-Currently, I'm working on turning this project into a more general library to train different agents in several different Unity environments. The purpose is to myself learn more about Deep Reinforcement Learning by creating the algorithms.
+Currently, I'm working on turning this project into a more general framework to train different agents in several different environments. The purpose is to learn more about Deep Reinforcement Learning by creating the algorithms.
+
+### Implemented algorithms and environments
+
+| Algorithm                | State/Action Spaces   | Example environments |
+|--------------------------|-----------------------|----------------------|
+| DQN                      | Continuous/Discrete   | BananaCollector (Unity)|
+| DDPG                     | Continuous/Continuous | Reacher (Unity)      |
+| SarsaMax, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
 
 ### Future improvements:
 - [x] add DDPG algorithm
@@ -14,10 +22,10 @@ Currently, I'm working on turning this project into a more general library to tr
 - [x] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
 - [ ] add hyperparameter tuning and improve the models
 - [ ] add Prioritized Experience Replay
-- [ ] add environments for Sarsa type agents
+- [x] add environments for Sarsa type agents
 - [ ] add an example of training and agent from pixel data
 - [ ] upgrade ML-Agents package to the latest Release 1
-- [ ] add PPO, Dueling DQN and other algorithms (to be decided)
+- [ ] add PPO, Dueling DQN and other algorithms
 
 ## BananaCollector Environment
 
@@ -45,7 +53,7 @@ The task is episodic and considered solved when the agent gets an average score 
 
 ## Other environments
 
-Currently, also an executable to train and run Reacher and Crawler Unity environments are included (see more information below).
+Currently, also an executables to train and run Reacher Unity environment are included (see more information below).
 
 ## Installation
 
@@ -127,7 +135,7 @@ The python executable takes the directory name of the trained agent model as an 
 
 ### Using other included environments
 
-The executable `crawler.py` and `reacher.py` work similarly for the Crawler and Reacher environments.
+The executables `taxi.py`, `crawler.py` and `reacher.py` work similarly as the BananaCollector environment.
 
 ## Licenses and acknowledgements
 

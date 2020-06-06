@@ -20,7 +20,10 @@ class History:
         """Resets internal training history."""
 
         self._scores_window = deque(maxlen=self.score_window_size)
-        self._history = {}
+        self._history = {
+            'episode_length': [],
+            'score': []
+        }
 
     @property
     def num_episodes(self):
@@ -63,23 +66,40 @@ class History:
         Args:
             episode_length (int): length of the episode
             episode_rewards (list): total rewards collected during the episode
-                by each agent
+                by agent(s)
 
         """
+        self._history['episode_length'].append(episode_length)
+
+        if isinstance(episode_rewards, list) and len(episode_rewards) > 1:
+            self._update_multi_agent_history(episode_rewards)
+        elif isinstance(episode_rewards, list) and len(episode_rewards) == 1:
+            self._update_single_agent_history(episode_rewards[0])
+        else:
+            self._update_single_agent_history(episode_rewards)
+
+        score = self._calculate_score(episode_rewards)
+        self._history['score'].append(score)
+
+    def _update_single_agent_history(self, episode_reward):
+
+        if 'reward' not in self._history:
+            self._history['reward'] = [episode_reward]
+        else:
+            self._history['reward'].append(episode_reward)
+
+    def _update_multi_agent_history(self, episode_rewards):
 
         keys = [
-            'episode_length',
             'reward_max',
             'reward_min',
             'reward_mean',
             'reward_std',
-            'score']
+        ]
 
         for key in keys:
             if key not in self._history:
                 self._history[key] = []
-
-        self._history['episode_length'].append(episode_length)
 
         reward_episode_max = np.max(episode_rewards)
         reward_episode_min = np.min(episode_rewards)
@@ -91,19 +111,25 @@ class History:
         self._history['reward_mean'].append(reward_episode_mean)
         self._history['reward_std'].append(reward_episode_std)
 
-        score = self._calculate_score(episode_rewards)
-        self._history['score'].append(score)
-
     def add_from(self, metrics):
         """Adds episode related metrics into history from a dictionary.
 
         This function should be called at the beginning or at the end
         of each episode to store new value for that episode.
 
+        The use case for this is that Interaction class can get more
+        insight into training from the Agent itself.
+
+        If metrics is None, then nothing is done. This is so that the
+        Interaction class History does not need to care what Agent returns.
+
         Args:
-            metrics (dict): string key with int/float value
+            metrics (dict): string key with int/float value, or None
 
         """
+        if metrics is None:
+            return
+
         for key, value in metrics.items():
             try:
                 self._history[key].append(value)

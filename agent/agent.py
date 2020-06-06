@@ -101,3 +101,28 @@ class RandomAgent(Agent):
 
     def load(self, directory):
         return
+
+class RandomGymAgent(RandomAgent):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # TODO: num_agents > 1 not implemented
+
+    def act(self, state):
+        """Returns a random action for agent(s).
+
+        Args:
+            state (np.ndarray): the input is disregarded, only shape is checked
+
+        Raises:
+            TypeError: if state shape does not match expectation
+
+        Returns:
+            np.ndarray: a random move, an integer (for discrete agent) or array
+                of floats for continuous agent
+
+        """
+        if state not in self.space_size:
+            raise TypeError("state given to act() is not in the expected state space")
+
+        return self.action_size.sample()
