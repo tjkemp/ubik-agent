@@ -1,5 +1,8 @@
-import numpy as np
+import os
 from collections import defaultdict
+import pickle
+
+import numpy as np
 
 from .agent import Agent
 
@@ -47,7 +50,6 @@ class SarsaAgent(Agent):
                 f"Algorithm {algorithm} is not implemented")
 
         self.num_episodes = 0
-        self.explore = True
 
     def new_episode(self):
         """Function is called when a new episode starts."""
@@ -55,9 +57,7 @@ class SarsaAgent(Agent):
 
     def exploration(self, boolean):
         """Controls whether agent should do exploration or follow it's policy."""
-        old_explore = self.explore
-        self.explore = boolean
-        return old_explore
+        return
 
     def act(self, state):
         """Selects an action given the state.
@@ -139,8 +139,19 @@ class SarsaAgent(Agent):
                 self.alpha * (reward_next + self.gamma * reward_expected)
         return q_value
 
-    def load(self, directory):
-        pass
+    def load(self, directory, filename='model.json'):
+        """Load a learned model from a file."""
 
-    def save(self, directory):
-        pass
+        load_path = os.path.join(directory, filename)
+        with open(load_path, 'rb') as input_file:
+            model = pickle.load(input_file)
+
+        self.Q = defaultdict(lambda: np.zeros(self.action_size, dtype=np.float32))
+        self.Q.update(model)
+
+    def save(self, directory, filename='model.json'):
+        """Save a learned model into a file."""
+
+        save_path = os.path.join(directory, filename)
+        with open(save_path, 'wb') as output_file:
+            pickle.dump(dict(self.Q), output_file)
