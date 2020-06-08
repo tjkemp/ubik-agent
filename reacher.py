@@ -4,11 +4,11 @@ import os
 import argparse
 from unityagents import UnityEnvironment
 
-from agent.interaction import UnityInteraction
-from agent.helper import (
+from ubikagent.interaction import UnityInteraction
+from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
-from agent.ddpg import DDPGAgent
-from agent.agent import RandomAgent
+from ubikagent.ddpg import DDPGAgent
+from ubikagent.agent import RandomAgent
 
 ENV_PATH = './environments/Reacher_Linux/Reacher.x86_64'
 

@@ -5,11 +5,11 @@ import argparse
 from unityagents import UnityEnvironment
 import numpy as np
 
-from agent.interaction import UnityInteraction
-from agent.helper import (
+from ubikagent.interaction import UnityInteraction
+from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
-from agent import DQNAgent
-from agent.agent import RandomAgent
+from ubik.agent import DQNAgent
+from ubikagent.agent import RandomAgent
 
 ENV_PATH = './environments/Banana_Linux/Banana.x86_64'
 
