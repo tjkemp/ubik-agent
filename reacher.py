@@ -7,7 +7,7 @@ from unityagents import UnityEnvironment
 from ubikagent.interaction import UnityInteraction
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
-from ubikagent.ddpg import DDPGAgent
+from ubikagent.agent import DDPGAgent
 from ubikagent.agent import RandomAgent
 
 ENV_PATH = './environments/Reacher_Linux/Reacher.x86_64'

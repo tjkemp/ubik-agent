@@ -1,6 +1,6 @@
 import numpy as np
 
-from .agent import Agent
+from .agent.agent import Agent
 from .history import History
 from .helper import print_episode_statistics, print_target_reached
 

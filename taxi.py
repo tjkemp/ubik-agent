@@ -10,7 +10,7 @@ from ubikagent.interaction import GymInteraction
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
 from ubikagent.agent import RandomGymAgent
-from ubikagent.sarsa import SarsaAgent
+from ubikagent.agent import SarsaAgent
 
 MODEL_PARAMS = {
     'alpha': 0.5,
