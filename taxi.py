@@ -6,11 +6,11 @@ import argparse
 import gym
 import optuna
 
-from agent.interaction import GymInteraction
-from agent.helper import (
+from ubikagent.interaction import GymInteraction
+from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
-from agent.agent import RandomGymAgent
-from agent.sarsa import SarsaAgent
+from ubikagent.agent import RandomGymAgent
+from ubikagent.sarsa import SarsaAgent
 
 MODEL_PARAMS = {
     'alpha': 0.5,
