@@ -9,8 +9,8 @@ import torch.nn.functional as F
 from torch import nn
 
 from .agent import Agent
-from .noise import OUNoise
-from .buffer import ReplayBuffer
+from ..noise import OUNoise
+from ..buffer import ReplayBuffer
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
