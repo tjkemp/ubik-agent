@@ -1,2 +1,2 @@
-from .interaction import Interaction, UnityInteraction, GymInteraction
+from .interaction import Interaction, UnityInteraction
 from .buffer import ReplayBuffer

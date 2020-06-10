@@ -4,15 +4,20 @@ from .agent.agent import Agent
 from .history import History
 from .helper import print_episode_statistics, print_target_reached
 
-class Interaction:
-    """Class facilitates the interaction between an agent and a OpenAI Gym."""
 
+class BaseInteraction:
+    """Base class for classes facilitating the interaction between an agent and an environment.
+
+    This class should be extended with environment specific implementations of run() and stats().
+
+    """
     def __init__(self, agent, env):
-        """Creates an instance of simulation.
+        """Creates an instance of an interaction between an agent and an environment.
 
         Args:
-            agent: an instance of class implementing Agent
-            env: an instance of Gym environment
+            agent: an instance of a class implementing abstract class Agent
+            env: an instance of environment (specifics implemented by the class
+                extending this abstract class)
 
         """
         self._agent = agent
@@ -20,11 +25,6 @@ class Interaction:
 
         info = self.__class__.stats(env)
         self._state_size, self._action_size, self._num_agents = info
-
-    @staticmethod
-    def stats(env):
-        """Function to reach state and action space sizes and number of agents."""
-        raise NotImplementedError("stats() not implemented")
 
     @property
     def action_size(self):
@@ -37,6 +37,77 @@ class Interaction:
     @property
     def num_agents(self):
         return self._num_agents
+
+    @staticmethod
+    def stats(env):
+        """Implements retrieving state and action space sizes and number of agents.
+
+        The function is declared static so that environment details can be retrieved
+        before an agent is instantiated.
+
+        Args:
+            See implementing class `Interaction`.
+
+        Returns:
+            See implementing class `Interaction`.
+
+        """
+        raise NotImplementedError("stats() not implemented")
+
+    def run(self, num_episodes, max_time_steps, score_target, score_window_size, verbose):
+        """Implements the loop to make the agent interact in the environment.
+
+        The function is declared static so that environment details can be retrieved
+        before an agent is instantiated.
+
+        Args:
+            See implementing class `Interaction`.
+
+        Returns:
+            See implementing class `Interaction`.
+
+        """
+        raise NotImplementedError("run() not implemented")
+
+    def _print_episode_statistics(self, history):
+        """Prints a single row of statistics on episode performance."""
+        print_episode_statistics(history)
+
+    def _print_target_reached(self, history):
+        """Prints a notification that target score has been reached."""
+        print_target_reached(history)
+
+
+class Interaction(BaseInteraction):
+    """Class facilitates the interaction between an agent and OpenAI Gym environment."""
+
+    def __init__(self, agent, env):
+        """Creates an instance of simulation.
+
+        Args:
+            agent: an instance of class implementing Agent
+            env: an instance of Gym environment
+
+        """
+        super().__init__(agent, env)
+
+    @staticmethod
+    def stats(env):
+        """Returns important environment details needed to instantiate an agent.
+
+        Args:
+            env: Gym environment
+
+        Returns:
+            state_size (int): size of the state space
+            action_size (int): size of the action space
+            num_agents (int): number of agents in the environment
+
+        """
+        state_size = env.observation_space
+        action_size = env.action_space
+        num_agents = 1
+        return state_size, action_size, num_agents
 
     def run(
             self,
@@ -108,19 +179,11 @@ class Interaction:
 
         return history.as_dict()
 
-    def _print_episode_statistics(self, history):
-        """Prints a single row of statistics on episode performance."""
-        print_episode_statistics(history)
-
-    def _print_target_reached(self, history):
-        """Prints a notification that target score has been reached."""
-        print_target_reached(history)
-
 
 class UnityInteraction(Interaction):
     """Class facilitates the interaction between an agent and a UnityEnvironment."""
 
-    def __init__(self, agent, env, history=None):
+    def __init__(self, agent, env):
         """Creates an instance of simulation.
 
         Args:
@@ -128,7 +191,7 @@ class UnityInteraction(Interaction):
             env: an instance of UnityEnvironment environment
 
         """
-        super().__init__(agent, env, history=history)
+        super().__init__(agent, env)
         self._brain_name = env.brain_names[0]
 
     @staticmethod
@@ -150,6 +213,7 @@ class UnityInteraction(Interaction):
             self,
             num_episodes=1,
             max_time_steps=100,
+            learn=True,
             score_target=None,
             score_window_size=100,
             verbose=1):
@@ -180,7 +244,7 @@ class UnityInteraction(Interaction):
 
         for i_episode in range(1, num_episodes + 1):
 
-            env_info = self._env.reset(train_mode=True)[self._brain_name]
+            env_info = self._env.reset(train_mode=learn)[self._brain_name]
             states = env_info.vector_observations
 
             episode_rewards = np.zeros(self.num_agents)
@@ -217,24 +281,3 @@ class UnityInteraction(Interaction):
                 break
 
         return history.as_dict()
-
-class GymInteraction(Interaction):
-    """Class facilitates the interaction between an agent and a OpenAI Gym."""
-
-    def __init__(self, agent, env):
-        """Creates an instance of simulation.
-
-        Args:
-            agent: an instance of class implementing Agent
-            env: an instance of Gym environment
-
-        """
-        super().__init__(agent, env)
-
-    @staticmethod
-    def stats(env):
-
-        state_size = env.observation_space
-        action_size = env.action_space
-        num_agents = 1
-        return state_size, action_size, num_agents

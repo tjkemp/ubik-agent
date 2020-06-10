@@ -29,6 +29,7 @@ TRAINING_PARAMS = {
     'score_target': 13.0,
 }
 
+
 def train(modelname):
 
     # create environment
@@ -44,7 +45,7 @@ def train(modelname):
     if modelname is not None:
         create_model_dir(modelname)
 
-    history = sim.train(**TRAINING_PARAMS)
+    history = sim.run(**TRAINING_PARAMS)
 
     if modelname is not None:
         modeldir = os.path.join(get_model_dir(modelname))
@@ -67,7 +68,7 @@ def run(modelname):
 
     # run simulation
     sim = UnityInteraction(agent, env)
-    sim.run()
+    sim.run(learn=False)
 
     env.close()
 
@@ -83,7 +84,7 @@ def random_run():
 
     # create train or run loop
     sim = UnityInteraction(agent, env)
-    sim.run()
+    sim.run(learn=False)
     env.close()
 
 def main():

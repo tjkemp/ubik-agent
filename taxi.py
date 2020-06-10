@@ -6,7 +6,7 @@ import argparse
 import gym
 import optuna
 
-from ubikagent.interaction import GymInteraction
+from ubikagent import Interaction
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history)
 from ubikagent.agent import RandomGymAgent
@@ -28,6 +28,7 @@ TRAINING_PARAMS = {
 
 ENV_ID = 'Taxi-v3'
 
+
 def optimize(modelname):
 
     # create environment
@@ -45,7 +46,7 @@ def optimize(modelname):
         gamma = trial.suggest_uniform('gamma', 0.5, 1.0)
 
         # create an agent
-        state_size, action_size, num_agents = GymInteraction.stats(env)
+        state_size, action_size, num_agents = Interaction.stats(env)
         agent = SarsaAgent(
             action_size.n,
             alpha=alpha,
@@ -55,7 +56,7 @@ def optimize(modelname):
             gamma=gamma)
 
         # and train the agent
-        sim = GymInteraction(agent, env)
+        sim = Interaction(agent, env)
         history = sim.train(
             num_episodes=num_episodes,
             max_time_steps=max_time_steps,
@@ -77,16 +78,16 @@ def train(modelname):
     env = gym.make(ENV_ID)
 
     # create an agent
-    state_size, action_size, num_agents = GymInteraction.stats(env)
+    state_size, action_size, num_agents = Interaction.stats(env)
     agent = SarsaAgent(action_size.n, **MODEL_PARAMS)
 
     # and create an interaction between them
-    sim = GymInteraction(agent, env)
+    sim = Interaction(agent, env)
 
     if modelname is not None:
         create_model_dir(modelname)
 
-    history = sim.train(**TRAINING_PARAMS)
+    history = sim.run(**TRAINING_PARAMS)
 
     if modelname is not None:
         modeldir = os.path.join(get_model_dir(modelname))
@@ -102,7 +103,7 @@ def run(modelname):
     env = gym.make(ENV_ID)
 
     # create an agent
-    state_size, action_size, num_agents = GymInteraction.stats(env)
+    state_size, action_size, num_agents = Interaction.stats(env)
     agent = SarsaAgent(
         action_size.n,
         epsilon=0.1,
@@ -111,7 +112,7 @@ def run(modelname):
     agent.load(modelfile)
 
     # run simulation
-    sim = GymInteraction(agent, env)
+    sim = Interaction(agent, env)
     sim.run()
 
     env.close()
@@ -122,12 +123,12 @@ def random_run():
     env = gym.make(ENV_ID)
 
     # create an agent
-    state_size, action_size, num_agents = GymInteraction.stats(env)
+    state_size, action_size, num_agents = Interaction.stats(env)
     agent = RandomGymAgent(
         state_size, action_size, action_type='discrete', num_agents=num_agents)
 
     # create train or run loop
-    sim = GymInteraction(agent, env)
+    sim = Interaction(agent, env)
     sim.run()
     env.close()
 
