@@ -22,7 +22,3 @@ class Agent(abc.ABC):
     @abc.abstractmethod
     def save(self, directory):
         pass
-
-    @abc.abstractmethod
-    def exploration(self, boolean):
-        pass

@@ -86,7 +86,6 @@ class DQNAgent(Agent):
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
-        self.explore = True
         self.epsilon = eps_start
         self.eps_end = eps_end
         self.eps_decay = eps_decay
@@ -114,24 +113,12 @@ class DQNAgent(Agent):
         self._loss_history.clear()
         return history
 
-    def exploration(self, boolean):
-        """Controls whether randomness is added to chosen actions.
-
-        Args:
-            boolean (bool): True or False, default True
-
-        """
-        self.explore = bool(boolean)
-
     def act(self, state, eps=None):
         """Returns action for given state as per current policy.
 
         Uses epsilon-greedy action selection. When epsilon is 1.0,
         the action is totally random. When epsilon is 0.0 the returned
         action is always the best action according the current policy.
-
-        If exploration is turned off, epsilon-greedy action selection
-        is disabled and actions are deterministic.
 
         Args:
             state (array_like): current state
@@ -144,7 +131,7 @@ class DQNAgent(Agent):
 
         epsilon = eps if eps is not None else self.epsilon
 
-        if not self.explore or random.random() > epsilon:
+        if random.random() > epsilon:
 
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             self.qnetwork_local.eval()

@@ -55,10 +55,6 @@ class SarsaAgent(Agent):
         """Function is called when a new episode starts."""
         return {'epsilon': self.epsilon}
 
-    def exploration(self, boolean):
-        """Controls whether agent should do exploration or follow it's policy."""
-        return
-
     def act(self, state):
         """Selects an action given the state.
 

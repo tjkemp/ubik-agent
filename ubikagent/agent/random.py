@@ -34,10 +34,6 @@ class RandomAgent(Agent):
 
         self.expected_state_shape = (self.num_agents, self.space_size)
 
-    def exploration(self, boolean):
-        # RandomAgent acts always randomly, it cannot be changed
-        return
-
     def new_episode(self):
         # RandomAgent has no metrics to output
         return

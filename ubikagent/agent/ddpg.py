@@ -131,7 +131,6 @@ class DDPGAgent(Agent):
             seed=seed).to(device)
         self.critic_optimizer = torch.optim.Adam(self.critic_local.parameters(), lr=lr_critic)
 
-        self.explore = True
         self.noise = OUNoise(action_size, seed)
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
@@ -170,15 +169,6 @@ class DDPGAgent(Agent):
         self._critic_losses = deque()
         return history
 
-    def exploration(self, boolean):
-        """Controls whether randomness is added to chosen actions.
-
-        Args:
-            boolean (bool): True or False, default True
-
-        """
-        self.explore = bool(boolean)
-
     def step(self, states, actions, rewards, next_states, dones):
 
         self.step_counter += 1
@@ -195,21 +185,14 @@ class DDPGAgent(Agent):
                 self._learn(experiences, self.gamma)
 
     def act(self, state):
-        """Return action for given state as per current policy.
-
-        If exploration is turned on, adds some noise to the action.
-
-        """
+        """Return action for given state as per current policy."""
         state = torch.from_numpy(state).float().to(device)
 
         self.actor_local.eval()
         with torch.no_grad():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
-
-        if self.explore:
-            action += self.noise.sample()
-
+        action += self.noise.sample()
         return np.clip(action, -1, 1)
 
     def save(self, directory):
