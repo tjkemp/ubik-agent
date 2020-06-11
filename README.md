@@ -34,7 +34,7 @@ I don't consider the version to even be 0.1 yet, so expect thing to change and b
 
 ## BananaCollector Environment
 
-![Trained Agent](files/banana-environment.gif)
+![Trained Agent](https://raw.githubusercontent.com/tjkemp/ubik-agent/assets/images/env/banana.gif)
 
 In the environment agent's task is to collect yellow bananas and avoid purple bananas in a large, square world.
 
