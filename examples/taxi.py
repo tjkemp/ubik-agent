@@ -8,7 +8,7 @@ import optuna
 
 from ubikagent import Interaction
 from ubikagent.helper import (
-    get_model_dir, create_model_dir, save_graph, save_history)
+    get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
 from ubikagent.agent import RandomGymAgent
 from ubikagent.agent import SarsaAgent
 
@@ -28,147 +28,110 @@ TRAINING_PARAMS = {
 
 ENV_ID = 'Taxi-v3'
 
+class Taxi:
 
-def optimize(modelname):
+    def optimize(self, modelname):
 
-    # create environment
-    env = gym.make(ENV_ID)
+        # create environment
+        env = gym.make(ENV_ID)
 
-    def objective(trial):
+        def objective(trial):
 
-        num_episodes = 300
-        max_time_steps = 200
+            num_episodes = 300
+            max_time_steps = 200
 
-        alpha = trial.suggest_uniform('alpha', 0.01, 0.5)
-        epsilon = trial.suggest_uniform('epsilon', 0.9, 1.0)
-        epsilon_decay = trial.suggest_uniform('epsilon_decay', 0.8, 1.0)
-        epsilon_min = trial.suggest_uniform('epsilon_min', 0.01, 0.1)
-        gamma = trial.suggest_uniform('gamma', 0.5, 1.0)
+            alpha = trial.suggest_uniform('alpha', 0.01, 0.5)
+            epsilon = trial.suggest_uniform('epsilon', 0.9, 1.0)
+            epsilon_decay = trial.suggest_uniform('epsilon_decay', 0.8, 1.0)
+            epsilon_min = trial.suggest_uniform('epsilon_min', 0.01, 0.1)
+            gamma = trial.suggest_uniform('gamma', 0.5, 1.0)
+
+            # create an agent
+            state_size, action_size, num_agents = Interaction.stats(env)
+            agent = SarsaAgent(
+                action_size.n,
+                alpha=alpha,
+                epsilon=epsilon,
+                epsilon_decay=epsilon_decay,
+                epsilon_min=epsilon_min,
+                gamma=gamma)
+
+            # and train the agent
+            sim = Interaction(agent, env)
+            history = sim.train(
+                num_episodes=num_episodes,
+                max_time_steps=max_time_steps,
+                verbose=0)
+
+            return history['score'][-1]
+
+        study = optuna.create_study(direction='maximize')
+        study.optimize(objective, n_trials=100)
+
+        trial = study.best_trial
+        print('Best score: {}'.format(trial.value))
+        print("Best hyperparameters: {}".format(trial.params))
+
+    def train(self, modelname):
+
+        # create environment
+        env = gym.make(ENV_ID)
+
+        # create an agent
+        state_size, action_size, num_agents = Interaction.stats(env)
+        agent = SarsaAgent(action_size.n, **MODEL_PARAMS)
+
+        # and create an interaction between them
+        sim = Interaction(agent, env)
+
+        if modelname is not None:
+            create_model_dir(modelname)
+
+        history = sim.run(**TRAINING_PARAMS)
+
+        if modelname is not None:
+            modeldir = os.path.join(get_model_dir(modelname))
+            agent.save(modeldir)
+            save_history(modelname, history)
+            save_graph(modelname, history['score'])
+
+        env.close()
+
+    def run(self, modelname):
+
+        # create environment
+        env = gym.make(ENV_ID)
 
         # create an agent
         state_size, action_size, num_agents = Interaction.stats(env)
         agent = SarsaAgent(
             action_size.n,
-            alpha=alpha,
-            epsilon=epsilon,
-            epsilon_decay=epsilon_decay,
-            epsilon_min=epsilon_min,
-            gamma=gamma)
+            epsilon=0.1,
+            algorithm=MODEL_PARAMS['algorithm'])
+        modelfile = os.path.join(get_model_dir(modelname))
+        agent.load(modelfile)
 
-        # and train the agent
+        # run simulation
         sim = Interaction(agent, env)
-        history = sim.train(
-            num_episodes=num_episodes,
-            max_time_steps=max_time_steps,
-            verbose=0)
+        sim.run()
 
-        return history['score'][-1]
+        env.close()
 
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=100)
+    def random_run(self, modelname):
 
-    trial = study.best_trial
-    print('Best score: {}'.format(trial.value))
-    print("Best hyperparameters: {}".format(trial.params))
+        # create environment
+        env = gym.make(ENV_ID)
 
+        # create an agent
+        state_size, action_size, num_agents = Interaction.stats(env)
+        agent = RandomGymAgent(
+            state_size, action_size, action_type='discrete', num_agents=num_agents)
 
-def train(modelname):
-
-    # create environment
-    env = gym.make(ENV_ID)
-
-    # create an agent
-    state_size, action_size, num_agents = Interaction.stats(env)
-    agent = SarsaAgent(action_size.n, **MODEL_PARAMS)
-
-    # and create an interaction between them
-    sim = Interaction(agent, env)
-
-    if modelname is not None:
-        create_model_dir(modelname)
-
-    history = sim.run(**TRAINING_PARAMS)
-
-    if modelname is not None:
-        modeldir = os.path.join(get_model_dir(modelname))
-        agent.save(modeldir)
-        save_history(modelname, history)
-        save_graph(modelname, history['score'])
-
-    env.close()
-
-def run(modelname):
-
-    # create environment
-    env = gym.make(ENV_ID)
-
-    # create an agent
-    state_size, action_size, num_agents = Interaction.stats(env)
-    agent = SarsaAgent(
-        action_size.n,
-        epsilon=0.1,
-        algorithm=MODEL_PARAMS['algorithm'])
-    modelfile = os.path.join(get_model_dir(modelname))
-    agent.load(modelfile)
-
-    # run simulation
-    sim = Interaction(agent, env)
-    sim.run()
-
-    env.close()
-
-def random_run():
-
-    # create environment
-    env = gym.make(ENV_ID)
-
-    # create an agent
-    state_size, action_size, num_agents = Interaction.stats(env)
-    agent = RandomGymAgent(
-        state_size, action_size, action_type='discrete', num_agents=num_agents)
-
-    # create train or run loop
-    sim = Interaction(agent, env)
-    sim.run()
-    env.close()
-
-def main():
-
-    parser = argparse.ArgumentParser(
-        description='Runs or trains an agent in OpenAI Gym environment.')
-
-    subparsers = parser.add_subparsers(
-        title='subcommands', dest='subcommand', help='additional help')
-
-    parser_train = subparsers.add_parser('train', help='train an agent')
-    parser_train.add_argument(
-        'modelname', nargs='?', help="directory name in models where to save the agent model")
-
-    parser_run = subparsers.add_parser(
-        'run', help='run environment with trained agent')
-    parser_run.add_argument(
-        'modelname', help="directory name in models from where to load the agent model")
-
-    parser_random = subparsers.add_parser(
-        'random', help='run environment with randomly acting agent')
-    parser_random.set_defaults(modelname=None)
-
-    parser_train = subparsers.add_parser('optimize', help='search for best hyperparameters')
-    parser_train.add_argument(
-        'modelname', nargs='?', help="directory name in models where to save the agent model")
-
-    args = parser.parse_args()
-
-    if args.subcommand == 'train':
-        train(args.modelname)
-    elif args.subcommand == 'run':
-        run(args.modelname)
-    elif args.subcommand == 'random':
-        random_run()
-    elif args.subcommand == 'optimize':
-        optimize(args.modelname)
-    else:
-        parser.print_help()
+        # create train or run loop
+        sim = Interaction(agent, env)
+        sim.run()
+        env.close()
 
 if __name__ == "__main__":
-    main()
+    project = Taxi()
+    args = parse_and_run(project)
