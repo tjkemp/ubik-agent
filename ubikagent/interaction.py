@@ -23,37 +23,6 @@ class BaseInteraction:
         self._agent = agent
         self._env = env
 
-        info = self.__class__.stats(env)
-        self._state_size, self._action_size, self._num_agents = info
-
-    @property
-    def action_size(self):
-        return self._action_size
-
-    @property
-    def state_size(self):
-        return self._state_size
-
-    @property
-    def num_agents(self):
-        return self._num_agents
-
-    @staticmethod
-    def stats(env):
-        """Implements retrieving state and action space sizes and number of agents.
-
-        The function is declared static so that environment details can be retrieved
-        before an agent is instantiated.
-
-        Args:
-            See implementing class `Interaction`.
-
-        Returns:
-            See implementing class `Interaction`.
-
-        """
-        raise NotImplementedError("stats() not implemented")
-
     def run(self, num_episodes, max_time_steps, score_target, score_window_size, verbose):
         """Implements the loop to make the agent interact in the environment.
 
@@ -192,6 +161,7 @@ class UnityInteraction(Interaction):
 
         """
         super().__init__(agent, env)
+        self.state_size, self.action_size, self.num_agents = self.stats(env)
         self._brain_name = env.brain_names[0]
 
     @staticmethod
