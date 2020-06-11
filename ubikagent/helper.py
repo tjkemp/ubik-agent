@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 import matplotlib.pyplot as plt
 
 def get_model_dir(model_name, model_dir='models'):
@@ -55,3 +56,62 @@ def print_episode_statistics(history, multi_agent=False):
 def print_target_reached(history):
     """Prints a notification that target score has been reached."""
     print(f"\nTarget score reached in {history.num_episodes:d} episodes!")
+
+def parse_and_run(project):
+    """Parses cli arguments and runs a corresponding class and method.
+
+    This function is used in main() to provide command line interface
+    to agent classes, so that, for example `python -m examples.banana train`
+    could be evoked to call `train()` in which ever solution class is
+    defined in the `main()` function of *examples.banana* module.
+
+    In the future this may be refactored into class which dynamically
+    creates arguments.
+
+    Args:
+        project (object): an instantiated class in which the project is defined
+
+    Side effects:
+        Runs a method in a whichever class is given in the cli arguments.
+
+    """
+    parser = argparse.ArgumentParser(
+        description=f"Runs or trains an agent in an OpenGym environment.")
+
+    subparsers = parser.add_subparsers(
+        title='method', dest='method', help='additional help')
+
+    parser_train = subparsers.add_parser(
+        'train', help='train an agent')
+    parser_train.add_argument(
+        'modelname', nargs='?', help="directory name in models where to save the agent model")
+
+    parser_run = subparsers.add_parser(
+        'run', help='run environment with trained agent')
+    parser_run.add_argument(
+        'modelname', help="directory name in models from where to load the agent model")
+
+    parser_random = subparsers.add_parser(
+        'random', help='run with randomly acting agent')
+    parser_random.set_defaults(modelname=None)
+
+    parser_optimize = subparsers.add_parser(
+        'optimize', help='run hyperparameter optimization')
+    parser_optimize.set_defaults(modelname=None)
+
+    parser_interactive = subparsers.add_parser(
+        'interactive', help='interact with the environment')
+    parser_interactive.set_defaults(modelname=None)
+
+    args = parser.parse_args()
+
+    if args.method is None:
+        parser.print_help()
+    else:
+        method = args.method
+        method_args = vars(args)
+        del method_args['method']
+        try:
+            getattr(project, method)(**method_args)
+        except AttributeError:
+            print(f"The example class does not have the method '{method}'")
