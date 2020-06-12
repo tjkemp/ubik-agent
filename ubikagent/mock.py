@@ -15,6 +15,7 @@ AllBrainInfoMock = namedtuple(
     'AllBrainInfoMock', ['agents', 'local_done', 'rewards', 'vector_observations']
 )
 
+
 class UnityEnvironmentMock:
     """Mock of unityagents.environment.UnityEnvironment for testing.
 

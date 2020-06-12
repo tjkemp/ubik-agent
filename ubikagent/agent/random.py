@@ -2,6 +2,7 @@ import numpy as np
 
 from ubikagent.agent.abc import Agent
 
+
 class UnityRandomAgent(Agent):
     """Agent which acts randomly and does not learn.
 
@@ -70,6 +71,7 @@ class UnityRandomAgent(Agent):
 
     def load(self, directory):
         return
+
 
 class RandomAgent(Agent):
 

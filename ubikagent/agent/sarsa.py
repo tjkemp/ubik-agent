@@ -6,6 +6,7 @@ import numpy as np
 
 from ubikagent.agent.abc import Agent
 
+
 class SarsaAgent(Agent):
 
     def __init__(

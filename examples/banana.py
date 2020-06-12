@@ -85,6 +85,7 @@ class BananaCollector:
         sim.run(learn=False)
         env.close()
 
+
 if __name__ == "__main__":
     project = BananaCollector()
     args = parse_and_run(project)

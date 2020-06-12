@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import argparse
 
 from unityagents import UnityEnvironment
 
@@ -88,6 +87,7 @@ class Reacher:
         sim = UnityInteraction(agent, env)
         sim.run(learn=False)
         env.close()
+
 
 if __name__ == "__main__":
     project = Reacher()

@@ -3,6 +3,7 @@ import copy
 
 import numpy as np
 
+
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 

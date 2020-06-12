@@ -26,6 +26,7 @@ TRAINING_PARAMS = {
 
 ENV_ID = 'Taxi-v3'
 
+
 class Taxi:
 
     def optimize(self, modelname):
@@ -132,6 +133,7 @@ class Taxi:
         sim = Interaction(agent, env)
         sim.run()
         env.close()
+
 
 if __name__ == "__main__":
     project = Taxi()

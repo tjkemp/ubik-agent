@@ -87,6 +87,7 @@ class Crawler:
         sim.run(learn=False)
         env.close()
 
+
 if __name__ == "__main__":
     project = Crawler()
     args = parse_and_run(project)
