@@ -192,6 +192,7 @@ class UnityInteraction(Interaction):
         Args:
             num_episodes (int): number of episodes to run, >= 1
             max_time_steps (int): maximum number of timesteps per episode
+            learn (bool): whether to send observations to the agent
             score_target (float): max total rewards collected during an episode
                 at which to end training
             score_window_size (int): moving window size to calculate `score_target`
@@ -231,7 +232,8 @@ class UnityInteraction(Interaction):
                 dones = env_info.local_done
 
                 # save action, observation and reward for learning
-                self._agent.step(states, actions, rewards, next_states, dones)
+                if learn:
+                    self._agent.step(states, actions, rewards, next_states, dones)
                 states = next_states
                 episode_rewards += rewards
 

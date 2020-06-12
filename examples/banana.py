@@ -69,7 +69,7 @@ class BananaCollector:
 
         # run simulation
         sim = UnityInteraction(agent, env)
-        sim.run()
+        sim.run(learn=False)
         env.close()
 
     def random(self, modelname):
@@ -83,7 +83,7 @@ class BananaCollector:
 
         # create train or run loop
         sim = UnityInteraction(agent, env)
-        sim.run()
+        sim.run(learn=False)
         env.close()
 
 if __name__ == "__main__":
