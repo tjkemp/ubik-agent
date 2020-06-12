@@ -79,8 +79,8 @@ class DDPGAgent(Agent):
             state_size,
             action_size,
             num_agents,
-            learn_every=1,
-            learn_n_times=1,
+            update_interval=1,
+            update_times=1,
             lr_actor=3e-3,
             layers_actor=[128, 64],
             lr_critic=3e-3,
@@ -90,7 +90,24 @@ class DDPGAgent(Agent):
             gamma=0.99,
             replay_buffer_size=1e5,
             seed=42):
+        """Initializes an Agent object.
 
+        Args:
+            state_size (int): required, dimension of each state
+            action_size (int): required, dimension of each discrete action
+            num_agents (int): required, number of agents in the simulation
+            update_interval (int): how often to update the model,
+                1 = every step, 2 = every other
+            update_times (int): how many times to update the model at update_interval
+            lr_actor (int): learning rate for the "actor" network
+            lr_critic (int): learning rate for the "critic" network
+            batch_size (int): batch size for training the neural network
+            tau (int): soft update of target parameters
+            gamma (float): dicount factor, between 0.0 and 1.0
+            replay_buffer_size (int): length of learning history from which to learn
+            seed (int): random seed
+
+        """
         self.state_size = state_size
         self.action_size = action_size
         self.lr_actor = lr_actor
@@ -137,11 +154,11 @@ class DDPGAgent(Agent):
 
         self.memory = ReplayBuffer(self.replay_buffer_size, batch_size, seed)
 
-        self.step_counter = 0
-        self.learn_counter = 0
+        self.timestep = 0
 
-        self.learn_every = learn_every
-        self.learn_n_times = learn_n_times
+        self.update_interval = update_interval
+        self.update_times = update_times
+        self.update_counter = 0
 
         self._actor_losses = deque()
         self._critic_losses = deque()
@@ -172,19 +189,20 @@ class DDPGAgent(Agent):
         return history
 
     def step(self, states, actions, rewards, next_states, dones):
+        """Informs the agent of the consequences of an action so that
+        it is able to learn from it."""
 
-        self.step_counter += 1
+        self.timestep += 1
 
         for state, action, reward, next_state, done in zip(states, actions, rewards, next_states, dones):
             self.memory.add(state, action, reward, next_state, done)
 
-        if self.step_counter % self.learn_every == 0:
-            if len(self.memory) < self.batch_size:
-                return
-
-            for _ in range(self.learn_n_times):
-                experiences = self.memory.sample()
-                self._learn(experiences, self.gamma)
+        if self.timestep % self.update_interval == 0:
+            if len(self.memory) > self.batch_size:
+                for _ in range(self.update_times):
+                    experiences = self.memory.sample()
+                    self._learn(experiences, self.gamma)
+                    self.update_counter += 1
 
     def act(self, state):
         """Return action for given state as per current policy."""
@@ -220,7 +238,7 @@ class DDPGAgent(Agent):
 
     def _learn(self, experiences, gamma):
 
-        self.learn_counter += 1
+        self.update_counter += 1
 
         states, actions, rewards, next_states, dones = experiences
 

@@ -39,6 +39,7 @@ class DQNAgent(Agent):
             tau=1e-3,
             gamma=0.99,
             update_interval=4,
+            update_times=1,
             replay_buffer_size=1e5,
             seed=42,
             eps_start=1.0,
@@ -55,7 +56,9 @@ class DQNAgent(Agent):
             batch_size (int): batch size for training the neural network
             tau (int): soft update of target parameters
             gamma (float): dicount factor, between 0.0 and 1.0
-            update_interval (int): how often to update the network
+            update_interval (int): how often to update the model,
+                1 = every step, 2 = every other
+            update_times (int): how many times to update the model at update_interval
             replay_buffer_size (int): length of learning history from which to learn
             seed (int): random seed
             eps_start (float): starting value of epsilon, for epsilon-greedy action selection
@@ -70,7 +73,6 @@ class DQNAgent(Agent):
         self.batch_size = batch_size
         self.tau = tau
         self.gamma = gamma
-        self.update_interval = update_interval
         self.replay_buffer_size = int(replay_buffer_size)
         self.seed = random.seed(seed)
 
@@ -89,9 +91,14 @@ class DQNAgent(Agent):
         self.epsilon = eps_start
         self.eps_end = eps_end
         self.eps_decay = eps_decay
+        self.eps_at_episode_start = eps_start
+
         self.timestep = 0
 
-        self.eps_at_episode_start = eps_start
+        self.update_interval = update_interval
+        self.update_times = update_times
+        self.update_counter = 0
+
         self._loss_history = deque()
 
     def new_episode(self):
@@ -152,10 +159,11 @@ class DQNAgent(Agent):
         self.timestep += 1
 
         if self.timestep % self.update_interval == 0:
-            # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > self.batch_size:
-                experiences = self.memory.sample()
-                self._learn(experiences, self.gamma)
+                for _ in range(self.update_times):
+                    experiences = self.memory.sample()
+                    self._learn(experiences, self.gamma)
+                    self.update_counter += 1
 
         self.epsilon = max(self.eps_end, self.eps_decay * self.epsilon)
 
