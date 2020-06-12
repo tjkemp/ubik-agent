@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import argparse
 
 from unityagents import UnityEnvironment
 

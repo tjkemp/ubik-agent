@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import argparse
 
 import gym
 import optuna
