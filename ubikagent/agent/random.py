@@ -1,6 +1,6 @@
 import numpy as np
 
-from .agent import Agent
+from ubikagent.agent.agent import Agent
 
 class UnityRandomAgent(Agent):
     """Agent which acts randomly and does not learn.

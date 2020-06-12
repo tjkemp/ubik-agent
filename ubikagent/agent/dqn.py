@@ -8,9 +8,9 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from .agent import Agent
-from ..buffer import ReplayBuffer
-from ..model import QNetwork
+from ubikagent.agent import Agent
+from ubikagent.buffer import ReplayBuffer
+from ubikagent.model import QNetwork
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

@@ -1,8 +1,8 @@
 import numpy as np
 
-from .agent.agent import Agent
-from .history import History
-from .helper import print_episode_statistics, print_target_reached
+from ubikagent.agent.agent import Agent
+from ubikagent.history import History
+from ubikagent.helper import print_episode_statistics, print_target_reached
 
 
 class BaseInteraction:
