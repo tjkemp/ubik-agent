@@ -8,7 +8,7 @@ from ubikagent.interaction import UnityInteraction
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
 from ubikagent.agent import DDPGAgent
-from ubikagent.agent import RandomAgent
+from ubikagent.agent import UnityRandomAgent
 
 ENV_PATH = './environments/Reacher_Linux/Reacher.x86_64'
 
@@ -81,7 +81,7 @@ class Reacher:
 
         # create an agent
         state_size, action_size, num_agents = UnityInteraction.stats(env)
-        agent = RandomAgent(
+        agent = UnityRandomAgent(
             state_size, action_size, action_type='continuous', num_agents=num_agents)
 
         # create train or run loop

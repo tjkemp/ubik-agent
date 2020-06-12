@@ -9,7 +9,7 @@ import optuna
 from ubikagent import Interaction
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
-from ubikagent.agent import RandomGymAgent
+from ubikagent.agent import RandomAgent
 from ubikagent.agent import SarsaAgent
 
 MODEL_PARAMS = {
@@ -131,7 +131,7 @@ class Taxi:
 
         state_size = env.observation_space
         action_size = env.action_space
-        agent = RandomGymAgent(state_size, action_size)
+        agent = RandomAgent(state_size, action_size)
 
         # create train or run loop
         sim = Interaction(agent, env)

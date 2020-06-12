@@ -4,7 +4,7 @@ import pytest
 
 from agent.mock import UnityEnvironmentMock as UnityEnvironment
 from agent.interaction import UnityInteraction
-from agent.agent import RandomAgent
+from agent.agent import UnityRandomAgent
 
 
 class TestInteraction:
@@ -51,7 +51,7 @@ class TestInteraction:
 
         env = UnityEnvironment(**config)
 
-        agent = RandomAgent(
+        agent = UnityRandomAgent(
             config['vector_observation_space_size'],
             config['vector_action_space_size'],
             action_type=config['vector_action_space_type'],
@@ -75,7 +75,7 @@ class TestInteraction:
 
         env = UnityEnvironment(**config)
 
-        agent = RandomAgent(
+        agent = UnityRandomAgent(
             config['vector_observation_space_size'],
             config['vector_action_space_size'],
             action_type=config['vector_action_space_type'],
@@ -99,7 +99,7 @@ class TestInteraction:
 
         env = UnityEnvironment(**config)
 
-        agent = RandomAgent(
+        agent = UnityRandomAgent(
             config['vector_observation_space_size'],
             config['vector_action_space_size'],
             action_type=config['vector_action_space_type'],
@@ -123,7 +123,7 @@ class TestInteraction:
 
         env = UnityEnvironment(**config)
 
-        agent = RandomAgent(
+        agent = UnityRandomAgent(
             config['vector_observation_space_size'],
             config['vector_action_space_size'],
             action_type=config['vector_action_space_type'],
