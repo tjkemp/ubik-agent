@@ -79,6 +79,8 @@ class DDPGAgent(Agent):
             state_size,
             action_size,
             num_agents,
+            learn_every=1,
+            learn_n_times=1,
             lr_actor=3e-3,
             layers_actor=[128, 64],
             lr_critic=3e-3,
@@ -138,8 +140,8 @@ class DDPGAgent(Agent):
         self.step_counter = 0
         self.learn_counter = 0
 
-        self.learn_every = 1
-        self.learn_num_times = 1
+        self.learn_every = learn_every
+        self.learn_n_times = learn_n_times
 
         self._actor_losses = deque()
         self._critic_losses = deque()
@@ -180,7 +182,7 @@ class DDPGAgent(Agent):
             if len(self.memory) < self.batch_size:
                 return
 
-            for _ in range(self.learn_num_times):
+            for _ in range(self.learn_n_times):
                 experiences = self.memory.sample()
                 self._learn(experiences, self.gamma)
 
