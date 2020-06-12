@@ -47,7 +47,8 @@ class Taxi:
             gamma = trial.suggest_uniform('gamma', 0.5, 1.0)
 
             # create an agent
-            state_size, action_size, num_agents = Interaction.stats(env)
+            state_size = env.observation_space
+            action_size = env.action_space
             agent = SarsaAgent(
                 action_size.n,
                 alpha=alpha,
@@ -78,7 +79,8 @@ class Taxi:
         env = gym.make(ENV_ID)
 
         # create an agent
-        state_size, action_size, num_agents = Interaction.stats(env)
+        state_size = env.observation_space
+        action_size = env.action_space
         agent = SarsaAgent(action_size.n, **MODEL_PARAMS)
 
         # and create an interaction between them
@@ -103,7 +105,8 @@ class Taxi:
         env = gym.make(ENV_ID)
 
         # create an agent
-        state_size, action_size, num_agents = Interaction.stats(env)
+        state_size = env.observation_space
+        action_size = env.action_space
         agent = SarsaAgent(
             action_size.n,
             epsilon=0.1,
@@ -122,10 +125,13 @@ class Taxi:
         # create environment
         env = gym.make(ENV_ID)
 
+        import debugpy
+        debugpy.breakpoint()
         # create an agent
-        state_size, action_size, num_agents = Interaction.stats(env)
-        agent = RandomGymAgent(
-            state_size, action_size, action_type='discrete', num_agents=num_agents)
+
+        state_size = env.observation_space
+        action_size = env.action_space
+        agent = RandomGymAgent(state_size, action_size)
 
         # create train or run loop
         sim = Interaction(agent, env)

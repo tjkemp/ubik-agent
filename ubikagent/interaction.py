@@ -60,24 +60,6 @@ class Interaction(BaseInteraction):
         """
         super().__init__(agent, env)
 
-    @staticmethod
-    def stats(env):
-        """Returns important environment details needed to instantiate an agent.
-
-        Args:
-            env: Gym environment
-
-        Returns:
-            state_size (int): size of the state space
-            action_size (int): size of the action space
-            num_agents (int): number of agents in the environment
-
-        """
-        state_size = env.observation_space
-        action_size = env.action_space
-        num_agents = 1
-        return state_size, action_size, num_agents
-
     def run(
             self,
             num_episodes=1,
