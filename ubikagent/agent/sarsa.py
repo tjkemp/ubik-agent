@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 
-from ubikagent.agent.agent import Agent
+from ubikagent.agent.abc import Agent
 
 class SarsaAgent(Agent):
 

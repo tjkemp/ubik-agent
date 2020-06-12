@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ubikagent.agent import Agent
+from ubikagent.agent.abc import Agent
 from ubikagent.noise import OUNoise
 from ubikagent.buffer import ReplayBuffer
 

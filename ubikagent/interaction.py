@@ -1,6 +1,6 @@
 import numpy as np
 
-from ubikagent.agent.agent import Agent
+from ubikagent.agent.abc import Agent
 from ubikagent.history import History
 from ubikagent.helper import print_episode_statistics, print_target_reached
 

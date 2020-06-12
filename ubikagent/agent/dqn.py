@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from ubikagent.agent import Agent
+from ubikagent.agent.abc import Agent
 from ubikagent.buffer import ReplayBuffer
 from ubikagent.model import QNetwork
 
