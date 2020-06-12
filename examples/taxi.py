@@ -125,10 +125,7 @@ class Taxi:
         # create environment
         env = gym.make(ENV_ID)
 
-        import debugpy
-        debugpy.breakpoint()
         # create an agent
-
         state_size = env.observation_space
         action_size = env.action_space
         agent = RandomAgent(state_size, action_size)
