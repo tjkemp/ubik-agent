@@ -58,7 +58,7 @@ class Taxi:
 
             # and train the agent
             sim = Interaction(agent, env)
-            history = sim.train(
+            history = sim.run(
                 num_episodes=num_episodes,
                 max_time_steps=max_time_steps,
                 verbose=0)
@@ -117,7 +117,7 @@ class Taxi:
 
         env.close()
 
-    def random_run(self, modelname):
+    def random(self, modelname):
 
         # create environment
         env = gym.make(ENV_ID)

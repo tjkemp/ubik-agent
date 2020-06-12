@@ -73,7 +73,7 @@ class Crawler:
         sim.run(learn=False)
         env.close()
 
-    def random_run(self, modelname):
+    def random(self, modelname):
 
         # create environment
         env = UnityEnvironment(file_name=ENV_PATH, no_graphics=False)

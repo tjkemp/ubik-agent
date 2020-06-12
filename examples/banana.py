@@ -72,8 +72,7 @@ class BananaCollector:
         sim.run()
         env.close()
 
-    def random(self):
-
+    def random(self, modelname):
         # create environment
         env = UnityEnvironment(file_name=ENV_PATH, no_graphics=False)
 
