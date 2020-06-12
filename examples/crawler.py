@@ -2,13 +2,13 @@
 
 import os
 import argparse
+
 from unityagents import UnityEnvironment
 
-from ubikagent.interaction import UnityInteraction
+from ubikagent import UnityInteraction
+from ubikagent.agent import DDPGAgent, UnityRandomAgent
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
-from ubikagent.agent import DDPGAgent
-from ubikagent.agent import UnityRandomAgent
 
 ENV_PATH = './environments/Crawler_Linux/Crawler.x86_64'
 

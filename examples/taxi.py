@@ -7,10 +7,9 @@ import gym
 import optuna
 
 from ubikagent import Interaction
+from ubikagent.agent import RandomAgent, SarsaAgent
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
-from ubikagent.agent import RandomAgent
-from ubikagent.agent import SarsaAgent
 
 MODEL_PARAMS = {
     'alpha': 0.5,
