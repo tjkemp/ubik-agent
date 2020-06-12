@@ -108,10 +108,11 @@ def parse_and_run(project):
     if args.method is None:
         parser.print_help()
     else:
-        method = args.method
+        method_name = args.method
         method_args = vars(args)
         del method_args['method']
         try:
-            getattr(project, method)(**method_args)
-        except AttributeError:
-            print(f"The example class does not have the method '{method}'")
+            method = getattr(project, method_name)
+            method(**method_args)
+        except AttributeError as err:
+            print(f"Error while calling the method '{method}': {err}")
