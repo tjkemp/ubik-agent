@@ -1,17 +1,15 @@
-from collections import namedtuple
+import pytest  # noqa: F401
 
-import pytest
-
-from agent.mock import UnityEnvironmentMock as UnityEnvironment
-from agent.interaction import UnityInteraction
-from agent.agent import UnityRandomAgent
+from ubikagent.mock import UnityEnvironmentMock as UnityEnvironment
+from ubikagent.interaction import UnityInteraction
+from ubikagent.agent import UnityRandomAgent
 
 
 class TestInteraction:
     """Tests Interaction class with a randomly behaving agent and a mock Unity environment.
 
-    These tests are integration type of tests (testing several components at once). Aim is
-    to not check for specific outputs, but to check nothing crashes.
+    These tests are integration type of tests (testing several components at once). The
+    aim is to not check for specific outputs, but to check nothing crashes.
 
     """
     twenty_reachers_config = {
@@ -85,7 +83,7 @@ class TestInteraction:
 
         num_episodes = 2
         max_time_steps = 2
-        history = sim.train(
+        history = sim.run(
             num_episodes=num_episodes,
             max_time_steps=max_time_steps)
         env.close()
@@ -133,7 +131,7 @@ class TestInteraction:
 
         num_episodes = 2
         max_time_steps = 2
-        history = sim.train(
+        history = sim.run(
             num_episodes=num_episodes,
             max_time_steps=max_time_steps)
         env.close()
