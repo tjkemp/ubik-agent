@@ -91,12 +91,15 @@ def parse_and_run(project):
     parser_train = subparsers.add_parser(
         'train', help='train an agent')
     parser_train.add_argument(
-        'modelname', nargs='?', help="directory name in models where to save the agent model")
+        'modelname',
+        nargs='?',
+        help="directory name in models where to save the agent model")
 
     parser_run = subparsers.add_parser(
         'run', help='run environment with trained agent')
     parser_run.add_argument(
-        'modelname', help="directory name in models from where to load the agent model")
+        'modelname',
+        help="directory name in models from where to load the agent model")
 
     parser_random = subparsers.add_parser(
         'random', help='run with randomly acting agent')

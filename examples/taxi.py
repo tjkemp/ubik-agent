@@ -46,7 +46,7 @@ class Taxi:
             gamma = trial.suggest_uniform('gamma', 0.5, 1.0)
 
             # create an agent
-            state_size = env.observation_space
+            state_size = env.observation_space  # noqa: F841
             action_size = env.action_space
             agent = SarsaAgent(
                 action_size.n,
@@ -78,7 +78,7 @@ class Taxi:
         env = gym.make(ENV_ID)
 
         # create an agent
-        state_size = env.observation_space
+        state_size = env.observation_space  # noqa: F841
         action_size = env.action_space
         agent = SarsaAgent(action_size.n, **MODEL_PARAMS)
 
@@ -104,7 +104,7 @@ class Taxi:
         env = gym.make(ENV_ID)
 
         # create an agent
-        state_size = env.observation_space
+        state_size = env.observation_space  # noqa: F841
         action_size = env.action_space
         agent = SarsaAgent(
             action_size.n,

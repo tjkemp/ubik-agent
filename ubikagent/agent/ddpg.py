@@ -46,7 +46,14 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=64, fc2_units=32, fc3_units=32):
+    def __init__(
+            self,
+            state_size,
+            action_size,
+            seed,
+            fcs1_units=64,
+            fc2_units=32,
+            fc3_units=32):
         super(Critic, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.fcs1 = nn.Linear(state_size, fcs1_units)
@@ -132,7 +139,8 @@ class DDPGAgent(Agent):
             fc_units=layers_actor[0],
             fc_units2=layers_actor[1],
             seed=seed).to(device)
-        self.actor_optimizer = torch.optim.Adam(self.actor_local.parameters(), lr=lr_actor)
+        self.actor_optimizer = torch.optim.Adam(
+            self.actor_local.parameters(), lr=lr_actor)
 
         self.critic_local = Critic(
             state_size,
@@ -148,7 +156,8 @@ class DDPGAgent(Agent):
             fc2_units=layers_critic[1],
             fc3_units=layers_critic[2],
             seed=seed).to(device)
-        self.critic_optimizer = torch.optim.Adam(self.critic_local.parameters(), lr=lr_critic)
+        self.critic_optimizer = torch.optim.Adam(
+            self.critic_local.parameters(), lr=lr_critic)
 
         self.noise = OUNoise(action_size, seed)
 
@@ -194,7 +203,8 @@ class DDPGAgent(Agent):
 
         self.timestep += 1
 
-        for state, action, reward, next_state, done in zip(states, actions, rewards, next_states, dones):
+        for state, action, reward, next_state, done in zip(
+                states, actions, rewards, next_states, dones):
             self.memory.add(state, action, reward, next_state, done)
 
         if self.timestep % self.update_interval == 0:
@@ -273,5 +283,7 @@ class DDPGAgent(Agent):
         self._critic_losses.append(critic_loss.float().item())
 
     def _soft_update(self, local_model, target_model, tau):
-        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
-            target_param.data.copy_(tau * local_param.data + (1.0 - tau) * target_param.data)
+        for target_param, local_param in zip(
+                target_model.parameters(), local_model.parameters()):
+            target_param.data.copy_(
+                tau * local_param.data + (1.0 - tau) * target_param.data)

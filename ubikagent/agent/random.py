@@ -17,7 +17,7 @@ class UnityRandomAgent(Agent):
 
         Args:
             space_size (int): the space size per agent
-            action_size (int): the max integer output(s), when using discrete action type,
+            action_size (int): the max integer output, when using discrete action type,
                 and the number of outputs per agent, when using continous action space
             action_type (str): either 'discrete' or 'continuous'
             num_agents (int): number of agents

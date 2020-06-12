@@ -5,9 +5,10 @@ from ubikagent.helper import print_episode_statistics, print_target_reached
 
 
 class BaseInteraction:
-    """Base class for classes facilitating the interaction between an agent and an environment.
+    """Base class facilitating the interaction between an agent and an environment.
 
-    This class should be extended with environment specific implementations of run() and stats().
+    This class should be extended with environment specific implementations of
+    run() and stats().
 
     """
     def __init__(self, agent, env):
@@ -22,11 +23,8 @@ class BaseInteraction:
         self._agent = agent
         self._env = env
 
-    def run(self, num_episodes, max_time_steps, score_target, score_window_size, verbose):
+    def run(self, num_episodes, max_time_steps):
         """Implements the loop to make the agent interact in the environment.
-
-        The function is declared static so that environment details can be retrieved
-        before an agent is instantiated.
 
         Args:
             See implementing class `Interaction`.

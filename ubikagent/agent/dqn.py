@@ -18,8 +18,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class DQNAgent(Agent):
     """Deep Q-Learning algorithm for discrete actions spaces.
 
-    Deep Q-Learning algorithm first introduced by DeepMind's
-    [research paper](https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf).
+    Deep Q-Learning algorithm first introduced by DeepMind's [research paper]
+    (https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf).
 
     Q-Learning is a model-free reinforcement learning algorithm to learn a policy
     for an agent. In Deep Q-Learning, a neural network represents the Q. More
@@ -61,9 +61,11 @@ class DQNAgent(Agent):
             update_times (int): how many times to update the model at update_interval
             replay_buffer_size (int): length of learning history from which to learn
             seed (int): random seed
-            eps_start (float): starting value of epsilon, for epsilon-greedy action selection
+            eps_start (float): starting value of epsilon, for epsilon-greedy
+                action selection
             eps_end (float): minimum value of epsilon
-            eps_decay (float): multiplicative factor (per episode) for decreasing epsilon
+            eps_decay (float): multiplicative factor for decreasing epsilon (per
+                episode)
 
         """
         self.state_size = state_size
@@ -203,7 +205,7 @@ class DQNAgent(Agent):
         next_states = torch.as_tensor(next_states, dtype=torch.float)
         dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
-        Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+        Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)  # noqa: E501
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
         Q_expected = self.qnetwork_local(states).gather(1, actions)
 
@@ -225,5 +227,7 @@ class DQNAgent(Agent):
             target_model (PyTorch model): weights will be copied to
             tau (float): interpolation parameter
         """
-        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
-            target_param.data.copy_(tau * local_param.data + (1.0 - tau) * target_param.data)
+        for target_param, local_param in zip(
+                target_model.parameters(), local_model.parameters()):
+            target_param.data.copy_(
+                tau * local_param.data + (1.0 - tau) * target_param.data)

@@ -3,6 +3,7 @@ from collections import deque
 
 import numpy as np
 
+
 class History:
     """Class to store episode training or run statistics."""
 
