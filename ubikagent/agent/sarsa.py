@@ -4,7 +4,8 @@ import pickle
 
 import numpy as np
 
-from .agent import Agent
+from ubikagent.agent.abc import Agent
+
 
 class SarsaAgent(Agent):
 
@@ -54,10 +55,6 @@ class SarsaAgent(Agent):
     def new_episode(self):
         """Function is called when a new episode starts."""
         return {'epsilon': self.epsilon}
-
-    def exploration(self, boolean):
-        """Controls whether agent should do exploration or follow it's policy."""
-        return
 
     def act(self, state):
         """Selects an action given the state.

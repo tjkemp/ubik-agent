@@ -1,106 +1,75 @@
 import numpy as np
 
-from .agent import Agent
-from .history import History
-from .helper import print_episode_statistics, print_target_reached
+from ubikagent.history import History
+from ubikagent.helper import print_episode_statistics, print_target_reached
 
-class Interaction:
-    """Class facilitates the interaction between an agent and a OpenAI Gym."""
 
-    def __init__(self, agent, env, history=None):
-        """Creates an instance of simulation.
+class BaseInteraction:
+    """Base class facilitating the interaction between an agent and an environment.
+
+    This class should be extended with environment specific implementations of
+    run() and stats().
+
+    """
+    def __init__(self, agent, env):
+        """Creates an instance of an interaction between an agent and an environment.
 
         Args:
-            agent: an instance of class implementing Agent
-            env: an instance of Gym environment
-            history: an instance of History to use to record the interaction
+            agent: an instance of a class implementing abstract class Agent
+            env: an instance of environment (specifics implemented by the class
+                extending this abstract class)
 
         """
         self._agent = agent
         self._env = env
 
-        info = self.__class__.stats(env)
-        self._state_size, self._action_size, self._num_agents = info
-
-        if history is None:
-            self.history = History()
-        else:
-            self.history = history
-
-    @staticmethod
-    def stats(env):
-        """Function to reach state and action space sizes and number of agents."""
-        raise NotImplementedError("stats() not implemented")
-
-    @property
-    def action_size(self):
-        return self._action_size
-
-    @property
-    def state_size(self):
-        return self._state_size
-
-    @property
-    def num_agents(self):
-        return self._num_agents
-
-    def run(self, num_episodes=1, max_time_steps=100, verbose=1):
-        """Simulates the agent in the environment for given numbers of episodes.
+    def run(self, num_episodes, max_time_steps):
+        """Implements the loop to make the agent interact in the environment.
 
         Args:
-            num_episodes (int): number of episodes to simulate
-            max_time_steps (int): maximum number of timesteps to play
+            See implementing class `Interaction`.
 
         Returns:
-            dict: episode lengths and rewards for each episode
+            See implementing class `Interaction`.
 
         """
-        self._agent.exploration(False)
+        raise NotImplementedError("run() not implemented")
 
-        history = History()
+    def _print_episode_statistics(self, history):
+        """Prints a single row of statistics on episode performance."""
+        print_episode_statistics(history)
 
-        for i_episode in range(1, num_episodes + 1):
+    def _print_target_reached(self, history):
+        """Prints a notification that target score has been reached."""
+        print_target_reached(history)
 
-            state = self._env.reset()
 
-            episode_rewards = 0.
+class Interaction(BaseInteraction):
+    """Class facilitates the interaction between an agent and OpenAI Gym environment."""
 
-            for timestep in range(1, max_time_steps + 1):
+    def __init__(self, agent, env):
+        """Creates an instance of simulation.
 
-                # choose and execute an action in the environment
-                action = self._agent.act(state)
-                env_info = self._env.step(action)
+        Args:
+            agent: an instance of class implementing Agent
+            env: an instance of Gym environment
 
-                # observe the state and the reward
-                next_state, reward, done, _ = env_info
-                episode_rewards += reward
-                state = next_state
+        """
+        super().__init__(agent, env)
 
-                if done:
-                    break
-
-            agent_metrics = self._agent.new_episode()
-            history.add_from(agent_metrics)
-            history.update(timestep, episode_rewards)
-
-            if verbose:
-                self._print_episode_statistics(history)
-
-        return history.as_dict()
-
-    def train(
+    def run(
             self,
             num_episodes=1,
             max_time_steps=100,
             score_target=None,
             score_window_size=100,
             verbose=1):
-        """Trains the agent in the environment for a given number of episodes.
+        """Runs the agent in the environment for a given number of episodes.
 
         Args:
-            num_episodes (int): maximum number of training episodes
+            num_episodes (int): number of episodes to run, >= 1
             max_time_steps (int): maximum number of timesteps per episode
-            score_target (float): max total rewards collected during an episode
+            score_target (float): mean total rewards collected (within a window)
                 at which to end training
             score_window_size (int): moving window size to calculate `score_target`
             verbose (bool): amount of printed output, if > 0 print progress bar
@@ -109,11 +78,12 @@ class Interaction:
             Alters the state of `agent` and `env`.
 
         Returns:
-            dict: episode lengths and rewards for each episode
+            dict: episode lengths, rewards collected and any information
+            the agent provides after each episode
 
         """
 
-        self._agent.exploration(True)
+        history = History()
         self._agent.new_episode()
 
         if score_target is None:
@@ -144,33 +114,24 @@ class Interaction:
                     break
 
             agent_metrics = self._agent.new_episode()
-
-            self.history.add_from(agent_metrics)
-            self.history.update(timestep, episode_rewards)
+            history.add_from(agent_metrics)
+            history.update(timestep, episode_rewards)
 
             if verbose:
-                self._print_episode_statistics(self.history)
+                self._print_episode_statistics(history)
 
-            if self.history.score >= score_target:
+            if history.score >= score_target:
                 if verbose:
-                    self._print_target_reached(self.history)
+                    self._print_target_reached(history)
                 break
 
-        return self.history.as_dict()
-
-    def _print_episode_statistics(self, history):
-        """Prints a single row of statistics on episode performance."""
-        print_episode_statistics(history)
-
-    def _print_target_reached(self, history):
-        """Prints a notification that target score has been reached."""
-        print_target_reached(history)
+        return history.as_dict()
 
 
 class UnityInteraction(Interaction):
     """Class facilitates the interaction between an agent and a UnityEnvironment."""
 
-    def __init__(self, agent, env, history=None):
+    def __init__(self, agent, env):
         """Creates an instance of simulation.
 
         Args:
@@ -178,7 +139,8 @@ class UnityInteraction(Interaction):
             env: an instance of UnityEnvironment environment
 
         """
-        super().__init__(agent, env, history=history)
+        super().__init__(agent, env)
+        self.state_size, self.action_size, self.num_agents = self.stats(env)
         self._brain_name = env.brain_names[0]
 
     @staticmethod
@@ -196,63 +158,20 @@ class UnityInteraction(Interaction):
 
         return state_size, action_size, num_agents
 
-    def run(self, num_episodes=1, max_time_steps=100):
-        """Simulates the agent in the environment for given numbers of episodes.
-
-        Args:
-            num_episodes (int): number of episodes to simulate
-            max_time_steps (int): maximum number of timesteps to play
-
-        Returns:
-            dict: episode lengths and rewards for each episode
-
-        """
-        self._agent.exploration(False)
-
-        history = History()
-
-        for i_episode in range(1, num_episodes + 1):
-
-            env_info = self._env.reset(train_mode=False)[self._brain_name]
-            states = env_info.vector_observations
-
-            episode_rewards = np.zeros(self.num_agents)
-
-            for timestep in range(1, max_time_steps + 1):
-
-                # choose and execute an action in the environment
-                actions = self._agent.act(states)
-                env_info = self._env.step(actions)[self._brain_name]
-
-                # observe the state and the reward
-                next_states = env_info.vector_observations
-                rewards = env_info.rewards
-                dones = env_info.local_done
-
-                # score += reward
-                episode_rewards += rewards
-
-                states = next_states
-
-                if np.any(dones):
-                    break
-
-            history.update(timestep, episode_rewards.tolist())
-
-        return history.as_dict()
-
-    def train(
+    def run(
             self,
             num_episodes=1,
             max_time_steps=100,
+            learn=True,
             score_target=None,
             score_window_size=100,
             verbose=1):
-        """Trains the agent in the environment for a given number of episodes.
+        """Run the agent in the environment for a given number of episodes.
 
         Args:
-            num_episodes (int): maximum number of training episodes
+            num_episodes (int): number of episodes to run, >= 1
             max_time_steps (int): maximum number of timesteps per episode
+            learn (bool): whether to send observations to the agent
             score_target (float): max total rewards collected during an episode
                 at which to end training
             score_window_size (int): moving window size to calculate `score_target`
@@ -262,11 +181,12 @@ class UnityInteraction(Interaction):
             Alters the state of `agent` and `env`.
 
         Returns:
-            dict: episode lengths and rewards for each episode
+            dict: episode lengths, rewards collected and any information
+            the agent provides after each episode
 
         """
 
-        self._agent.exploration(True)
+        history = History()
         self._agent.new_episode()
 
         if score_target is None:
@@ -274,7 +194,7 @@ class UnityInteraction(Interaction):
 
         for i_episode in range(1, num_episodes + 1):
 
-            env_info = self._env.reset(train_mode=True)[self._brain_name]
+            env_info = self._env.reset(train_mode=learn)[self._brain_name]
             states = env_info.vector_observations
 
             episode_rewards = np.zeros(self.num_agents)
@@ -291,48 +211,24 @@ class UnityInteraction(Interaction):
                 dones = env_info.local_done
 
                 # save action, observation and reward for learning
-                # TODO: DQNAgent only saves the first
-                self._agent.step(states, actions, rewards, next_states, dones)
+                if learn:
+                    self._agent.step(states, actions, rewards, next_states, dones)
                 states = next_states
-
                 episode_rewards += rewards
 
                 if np.any(dones):
                     break
 
             agent_metrics = self._agent.new_episode()
-            if isinstance(agent_metrics, dict):
-                self.history.add_from(agent_metrics)
-
-            self.history.update(timestep, episode_rewards.tolist())
+            history.add_from(agent_metrics)
+            history.update(timestep, episode_rewards.tolist())
 
             if verbose:
-                self._print_episode_statistics(self.history)
+                self._print_episode_statistics(history)
 
-            if self.history.score >= score_target:
+            if history.score >= score_target:
                 if verbose:
-                    self._print_target_reached(self.history)
+                    self._print_target_reached(history)
                 break
 
-        return self.history.as_dict()
-
-class GymInteraction(Interaction):
-    """Class facilitates the interaction between an agent and a OpenAI Gym."""
-
-    def __init__(self, agent, env, history=None):
-        """Creates an instance of simulation.
-
-        Args:
-            agent: an instance of class implementing Agent
-            env: an instance of Gym environment
-
-        """
-        super().__init__(agent, env, history=history)
-
-    @staticmethod
-    def stats(env):
-
-        state_size = env.observation_space
-        action_size = env.action_space
-        num_agents = 1
-        return state_size, action_size, num_agents
+        return history.as_dict()

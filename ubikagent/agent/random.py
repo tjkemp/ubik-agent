@@ -1,35 +1,9 @@
-import abc
-
 import numpy as np
 
-class Agent(abc.ABC):
-
-    @abc.abstractmethod
-    def new_episode(self):
-        pass
-
-    @abc.abstractmethod
-    def act(self, state):
-        pass
-
-    @abc.abstractmethod
-    def step(self, state, action, reward, next_state, done):
-        pass
-
-    @abc.abstractmethod
-    def load(self, directory):
-        pass
-
-    @abc.abstractmethod
-    def save(self, directory):
-        pass
-
-    @abc.abstractmethod
-    def exploration(self, boolean):
-        pass
+from ubikagent.agent.abc import Agent
 
 
-class RandomAgent(Agent):
+class UnityRandomAgent(Agent):
     """Agent which acts randomly and does not learn.
 
     This class can be used for simulating a naive agent in environments,
@@ -43,7 +17,7 @@ class RandomAgent(Agent):
 
         Args:
             space_size (int): the space size per agent
-            action_size (int): the max integer output(s), when using discrete action type,
+            action_size (int): the max integer output, when using discrete action type,
                 and the number of outputs per agent, when using continous action space
             action_type (str): either 'discrete' or 'continuous'
             num_agents (int): number of agents
@@ -59,10 +33,6 @@ class RandomAgent(Agent):
         self.randomness = True
 
         self.expected_state_shape = (self.num_agents, self.space_size)
-
-    def exploration(self, boolean):
-        # RandomAgent acts always randomly, it cannot be changed
-        return
 
     def new_episode(self):
         # RandomAgent has no metrics to output
@@ -102,27 +72,37 @@ class RandomAgent(Agent):
     def load(self, directory):
         return
 
-class RandomGymAgent(RandomAgent):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # TODO: num_agents > 1 not implemented
+class RandomAgent(Agent):
 
-    def act(self, state):
-        """Returns a random action for agent(s).
+    def __init__(self, state_size, action_size):
+        """Initializes an instance of RandomAgent.
+
+        Only supports single agent environments.
 
         Args:
-            state (np.ndarray): the input is disregarded, only shape is checked
+            state_size (gym.spaces.space):  the observation space size
+            action_size (gym.spaces.space): the action space size
+
+        """
+        self.state_size = state_size
+        self.action_size = action_size
+
+    def act(self, state):
+        """Returns a random action from the agent.
+
+        Args:
+            state (any): the input is disregarded, only its shape is checked that
+                it matches `self.state_size`
 
         Raises:
             TypeError: if state shape does not match expectation
 
         Returns:
-            np.ndarray: a random move, an integer (for discrete agent) or array
-                of floats for continuous agent
+            np.ndarray: the random action
 
         """
-        if state not in self.space_size:
+        if state not in self.state_size:
             raise TypeError("state given to act() is not in the expected state space")
 
         return self.action_size.sample()

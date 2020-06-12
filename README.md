@@ -1,10 +1,14 @@
 # Ubik-Agent
 
+Status: WIP, actively developed
+
 ## About the project
 
 This project started as an excercise in training a Deep Q-Learning agent to navigate in BananaCollector 3D Unity environment.
 
-Currently, I'm working on turning this project into a more general framework to train different agents in several different environments. The purpose is to learn more about Deep Reinforcement Learning by creating the algorithms.
+Currently, I'm working on turning this project into a more general framework to train different agents in several different environments. I'm toying with the idea that this project could work as glue between algorithm libraries, optimization packages and training environments. Although, the purpose is still mainly for myself to learn more about Deep Reinforcement Learning by creating the algorithms.
+
+I don't consider the version to even be 0.1 yet, so expect thing to change and break.
 
 ### Implemented algorithms and environments
 
@@ -14,22 +18,23 @@ Currently, I'm working on turning this project into a more general framework to 
 | DDPG                     | Continuous/Continuous | Reacher (Unity)      |
 | SarsaMax, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
 
-### Future improvements:
+### Future improvements for version 0.1:
 - [x] add DDPG algorithm
 - [x] add pytest tests
 - [x] add Interaction class to serve as a middleman between the environment and the agent, to remove need for custom handling loops
 - [x] add more environments and an easier way to use and install them
 - [x] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
-- [ ] add hyperparameter tuning and improve the models
+- [x] add hyperparameter tuning and improve the models
 - [ ] add Prioritized Experience Replay
 - [x] add environments for Sarsa type agents
 - [ ] add an example of training and agent from pixel data
-- [ ] upgrade ML-Agents package to the latest Release 1
-- [ ] add PPO, Dueling DQN and other algorithms
+- [ ] upgrade ML-Agents package to the latest stable release (mainly because v0.4.0 environments are too unstable to train properly)
+- [ ] add PPO, and other algorithms
+- [ ] add proper documentation
 
 ## BananaCollector Environment
 
-![Trained Agent](files/banana-environment.gif)
+![Trained Agent](https://raw.githubusercontent.com/tjkemp/ubik-agent/assets/images/env/banana.gif)
 
 In the environment agent's task is to collect yellow bananas and avoid purple bananas in a large, square world.
 
@@ -88,12 +93,16 @@ Note that running the environment requires X Window System. If you are running W
 
 ## Instructions
 
-Executable `banana.py` is used both for training an agent and running the trained agent in the BananaCollector environment.
+All the examples are in the *examples* package directory as classes in their own module files.
 
-To get help on arguments for each executable, run them with `-h` switch, for example:
+For example, the BananaCollector is defined in the module `examples/banana.py`. The module defines a class and methods for training the agent and running the trained agent in the BananaCollector environment.
+
+You can run example modules in the following format: `python -m <package.module> <method> <experiment_name>`
+
+To get help on arguments for each executable, run the module with `-h` switch.
 
 ```bash
-./banana.py -h
+python -m examples.banana -h
 ```
 
 ### Running an episode with an agent acting randomly
@@ -101,7 +110,7 @@ To get help on arguments for each executable, run them with `-h` switch, for exa
 To test the environment with an agent behaving totally randomly run the executable with argument *random*.
 
 ```bash
-./banana.py random
+python -m examples.banana random
 ```
 
 ### Training an agent
@@ -109,10 +118,10 @@ To test the environment with an agent behaving totally randomly run the executab
 The python executable takes the directory name of an instance of trained agent as an argument. All the trained agents are saved into the directory *models*.
 
 ```bash
-./banana.py train my-cool-agent
+python -m examples.banana train my-cool-agent
 ```
 
-Which will output the following (omitting some Unity's messages):
+Which will output the following (omitting some messages):
 
 ```
 Creating an agent (state size of 37, and 4 actions).
@@ -123,23 +132,22 @@ Episode 373     Score: 20.00    Best: 25.00     Mean: 13.03
 Target score reached in 373 episodes!
 ```
 
-At the end of the training, the agent model will be saved in the *models* directory as `checkpoint.pth`.
+At the end of the training, the agent model will be saved in the directory *models/my-cool-agent* as `checkpoint.pth`.
 
 ### Running an episode with pre-trained agent
 
-The python executable takes the directory name of the trained agent model as an argument. All the trained agents are in directory *models*.
-
 ```bash
-./banana.py run my-cool-agent
+python -m examples.banana run my-cool-agent
 ```
 
 ### Using other included environments
 
-The executables `taxi.py`, `crawler.py` and `reacher.py` work similarly as the BananaCollector environment.
+The modules `taxi.py`, `crawler.py` and `reacher.py` work similarly as the BananaCollector environment.
 
 ## Licenses and acknowledgements
 
-- The original code is based on [Udacity Deep Reinforcement Learning nanodegree](https://github.com/udacity/deep-reinforcement-learning/) materials and is thus continued to be licensed under [MIT LICENSE](LICENSE).
+- This project is licensed under [MIT LICENSE](LICENSE).
+- The original code was inspired ny [Udacity Deep Reinforcement Learning nanodegree](https://github.com/udacity/deep-reinforcement-learning/) materials.
 
 ## Author
 

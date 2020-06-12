@@ -1,0 +1,13 @@
+[flake8]
+ignore = D203
+exclude =
+    .git,
+    __pycache__,
+    .pytest_cache,
+    env,
+    venv,
+    .vscode,
+    environments,
+    models
+max-complexity = 10
+max-line-length = 89

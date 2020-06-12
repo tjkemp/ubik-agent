@@ -1,8 +1,6 @@
-from collections import namedtuple
+import pytest  # noqa: F401
 
-import pytest
-
-from agent.history import History
+from ubikagent.history import History
 
 
 class TestHistory:
