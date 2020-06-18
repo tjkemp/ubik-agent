@@ -66,7 +66,7 @@ class SumTree:
         """
         power_of_two = (max_length & (max_length - 1) == 0) and max_length > 1
         if not power_of_two:
-            raise ValueError("max_length must be power of two")
+            raise ValueError("max_length must be a power of two")
         self._num_leaves = max_length
         self.clear()
 
