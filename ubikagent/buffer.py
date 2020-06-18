@@ -38,7 +38,7 @@ class ReplayBuffer:
         actions = [exp.action for exp in experiences]
         rewards = [exp.reward for exp in experiences]
         next_states = [exp.next_state for exp in experiences]
-        dones = [exp.done for exp in experiences if exp]
+        dones = [exp.done for exp in experiences]
 
         return (states, actions, rewards, next_states, dones)
 
