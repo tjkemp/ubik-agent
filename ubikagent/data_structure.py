@@ -24,7 +24,7 @@ class SumTree:
     total sum of priorities.
 
     >>> tree.append(0.1, "another object")
-    >>> tree.total_priority()
+    >>> tree.sum
     0.2
 
     Complexities:
@@ -71,7 +71,7 @@ class SumTree:
         self.clear()
 
     @property
-    def total_priority(self):
+    def sum(self):
         """Return the combined total priority of items in the queue.
 
         Returns:
@@ -153,7 +153,7 @@ class SumTree:
         if self._num_appends == 0:
             raise IndexError("the tree needs to have at least one item")
 
-        if priority > self.total_priority:
+        if priority > self.sum:
             return self._rightmost_leaf_index()
 
         node_index = self._retrieve(priority, 0)

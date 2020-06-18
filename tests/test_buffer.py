@@ -60,7 +60,7 @@ class TestPrioritizedReplayBuffer:
         for _ in range(buffer_size):
             buffer.add(*experience)
 
-        assert buffer.total_priority == priority * buffer_size
+        assert buffer.sum == priority * buffer_size
 
         samples = buffer.sample()
         new_priority = 100.0
@@ -68,4 +68,4 @@ class TestPrioritizedReplayBuffer:
         buffer.update_priorities(new_priorities_for_samples)
 
         # some randomness involved, so we don't know the exact priorities
-        assert buffer.total_priority > 100.0
+        assert buffer.sum > 100.0

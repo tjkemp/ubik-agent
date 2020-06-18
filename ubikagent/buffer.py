@@ -104,7 +104,7 @@ class PrioritizedReplayBuffer(SumTree):
         """
         if len(self) < self.batch_size:
             raise IndexError("not enough items in buffer to sample(), try again later")
-        range_size = self.total_priority / self.batch_size
+        range_size = self.sum / self.batch_size
 
         self.sampled_indices = deque()
         for batch, batch_next in zip(
