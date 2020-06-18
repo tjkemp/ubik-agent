@@ -82,8 +82,10 @@ class SumTree(object):
             item = self._heap[index]
         except IndexError:
             raise
-        self._heap[index] = (abs(new_priority), item)
-        # self._propagate_sum(index)
+
+        _index = self._first_index() + index
+        self._heap[_index] = (abs(new_priority), item)
+        self._propagate_sum(_index)
 
     def retrieve(self, priority):
         """Traverse through the list, sum priorities and return the index of
