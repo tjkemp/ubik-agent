@@ -4,7 +4,7 @@ from collections import namedtuple
 from ubikagent.buffer import PrioritizedReplayBuffer
 
 
-class TestSumTree:
+class TestPrioritizedReplayBuffer:
 
     def test_add_adds_items(self):
         buffer_size = 16
@@ -45,7 +45,7 @@ class TestSumTree:
 
         samples = buffer.sample()
 
-        # unfortunately to test this properly we need to go into internals
+        # unfortunately, to test this properly we need to go into internals
         assert max(buffer.sampled_indices) < buffer_size
         assert max(buffer.sampled_indices) > buffer_size // 2
         assert min(buffer.sampled_indices) >= 0
@@ -69,16 +69,3 @@ class TestSumTree:
 
         # some randomness involved, so we don't know the exact priorities
         assert buffer.total_priority > 100.0
-
-    def test_debug(self):
-        buffer_size = 16
-        batch_size = 4
-        buffer = PrioritizedReplayBuffer(buffer_size, batch_size)
-
-        priority = 1.0
-        experience = (priority, 100, 2, 3., 200, False)
-        for _ in range(buffer_size):
-            buffer.add(*experience)
-
-        states, actions, rewards, next_states, dones = buffer[1]
-        assert type(dones) == bool
