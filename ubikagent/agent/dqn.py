@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from ubikagent.agent.abc import Agent
-from ubikagent.buffer import ReplayBuffer
+from ubikagent.buffer import ReplayBuffer, PrioritizedReplayBuffer
 from ubikagent.model import QNetwork
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -231,3 +231,69 @@ class DQNAgent(Agent):
                 target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(
                 tau * local_param.data + (1.0 - tau) * target_param.data)
+
+
+class DQNAgentWithPER(DQNAgent):
+    """The class extends DQNAgent by using Prioritized Experience Replay."""
+
+    def __init__(self, *arg, **kwargs):
+        super().__init__(*arg, **kwargs)
+        self.memory = PrioritizedReplayBuffer(
+            self.replay_buffer_size, self.batch_size, seed=self.seed)
+
+    def step(self, state, action, reward, next_state, done):
+        """Informs the agent of the consequences of an action so that
+        it is able to learn from it."""
+
+        # we need a default priority
+        default_priority = 0.1
+        self.memory.add(
+            default_priority, state[0], action, reward[0], next_state[0], done[0])
+
+        self.timestep += 1
+
+        if self.timestep % self.update_interval == 0:
+            if len(self.memory) > self.batch_size:
+                for _ in range(self.update_times):
+                    experiences = self.memory.sample()
+                    td_errors = self._learn(experiences, self.gamma)
+                    self.memory.update_priorities(td_errors)
+                    self.update_counter += 1
+
+        self.epsilon = max(self.eps_end, self.eps_decay * self.epsilon)
+
+    def _learn(self, experiences, gamma):
+        """Update value parameters using given batch of experience tuples.
+
+        Args:
+            experiences (list): list of (s, a, r, s', done) tuples
+            gamma (float): discount factor
+
+        """
+        is_weights, states, actions, rewards, next_states, dones = experiences
+        is_weights = torch.as_tensor(is_weights, dtype=torch.float).unsqueeze(-1)
+        states = torch.as_tensor(states, dtype=torch.float)
+        actions = torch.as_tensor(actions, dtype=torch.long).unsqueeze(-1)
+        rewards = torch.as_tensor(rewards, dtype=torch.float).unsqueeze(-1)
+        next_states = torch.as_tensor(next_states, dtype=torch.float)
+        dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
+
+        Q_targets_next = self.qnetwork_target(
+            next_states).detach().max(1)[0].unsqueeze(1)  # noqa: E501
+
+        Q_targets = is_weights * (rewards + (gamma * Q_targets_next * (1 - dones)))
+
+        Q_expected = self.qnetwork_local(states).gather(1, actions)
+
+        loss = F.mse_loss(Q_expected, Q_targets)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        self._soft_update(self.qnetwork_local, self.qnetwork_target, self.tau)
+
+        self._loss_history.append(loss.float().item())
+
+        td_errors = Q_targets.detach().numpy() - Q_expected.detach().numpy()
+
+        return td_errors.reshape(-1).tolist()

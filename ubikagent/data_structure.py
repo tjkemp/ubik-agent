@@ -109,6 +109,28 @@ class SumTree:
             self._leaf_to_node_index(0) + \
             self._num_appends % self._num_leaves
 
+    def get_priority(self, index):
+        """Get the priority for the item at given index.
+
+        Args:
+            index (int): index of the item in the list
+
+        Raises:
+            IndexError: if index is out of range
+
+        Returns:
+            object: the object at location `index`
+
+        """
+        node_index = self._leaf_to_node_index(index)
+        try:
+            priority = self._tree[node_index][0]
+        except IndexError:
+            raise IndexError("index out of range")
+        except TypeError:
+            raise IndexError("index out of range")
+        return priority
+
     def update_priority(self, index, new_priority):
         """Updates priority for the item at given index.
 
@@ -120,12 +142,11 @@ class SumTree:
             IndexError: if there's no item at the given index
 
         """
+        node_index = self._leaf_to_node_index(index)
         try:
-            item = self._tree[index]
+            item = self._tree[node_index][1]
         except IndexError:
             raise
-
-        node_index = self._leaf_to_node_index(index)
         self._tree[node_index] = (abs(new_priority), item)
         self._propagate_sum(node_index)
 

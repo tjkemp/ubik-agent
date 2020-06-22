@@ -1,6 +1,8 @@
 import random
 from collections import namedtuple, deque
 
+import numpy as np
+
 from ubikagent.data_structure import SumTree
 
 
@@ -16,7 +18,7 @@ class ReplayBuffer:
             seed (int): random seed
 
         """
-        self.buffer = deque(maxlen=buffer_size)
+        self._storage = deque(maxlen=buffer_size)
         self.batch_size = batch_size
         self.Experience = namedtuple(
             "Experience",
@@ -27,12 +29,12 @@ class ReplayBuffer:
         """Add a new experience into buffer."""
 
         exp = self.Experience(state, action, reward, next_state, done)
-        self.buffer.append(exp)
+        self._storage.append(exp)
 
     def sample(self):
         """Sample a random batch of experiences from buffer."""
 
-        experiences = random.sample(self.buffer, k=self.batch_size)
+        experiences = random.sample(self._storage, k=self.batch_size)
 
         states = [exp.state for exp in experiences]
         actions = [exp.action for exp in experiences]
@@ -44,7 +46,7 @@ class ReplayBuffer:
 
     def __len__(self):
         """Return the current size of internal buffer."""
-        return len(self.buffer)
+        return len(self._storage)
 
 
 class PrioritizedReplayBuffer:
@@ -57,7 +59,7 @@ class PrioritizedReplayBuffer:
     Related paper: https://arxiv.org/pdf/1511.05952.pdf
 
     """
-    def __init__(self, buffer_size, batch_size, seed=None):
+    def __init__(self, buffer_size, batch_size, min_priority=0.0001, seed=None):
         """Initialize an instance.
 
         Raises:
@@ -66,37 +68,40 @@ class PrioritizedReplayBuffer:
         Args:
             buffer_size (int): maximum size of buffer
             batch_size (int): size of training batches to sample
+            min_priority (float): value that is added to all new priorities
             seed (int): optional, seed for randomness
 
         """
         try:
-            self.sumtree = SumTree(buffer_size)
+            self._storage = SumTree(buffer_size)
         except ValueError:
             raise
         self.batch_size = batch_size
+        self.min_priority = min_priority
         self.Experience = namedtuple(
             "Experience",
             ["state", "action", "reward", "next_state", "done"])
-        self.sampled_indices = deque()
+        self._sampled_indices = deque()
 
         if seed is not None:
             self.seed = random.seed(seed)
 
     def add(self, priority, state, action, reward, next_state, done):
         """Adds a new experience into buffer."""
+
         exp = self.Experience(state, action, reward, next_state, done)
-        self.sumtree.append(abs(priority), exp)
+        self._storage.append(abs(priority) + self.min_priority, exp)
 
     def update_priorities(self, new_priorities):
         """Updates priorities for previously sampled batch of experience."""
 
-        if len(new_priorities) != len(self.sampled_indices):
+        if len(new_priorities) != len(self._sampled_indices):
             raise ValueError(
                 "sample() should be called before called right before calling this method, "
                 "and length of argument 'new_priorities' should match batch_size")
 
-        for index, new_priority in zip(self.sampled_indices, new_priorities):
-            self.sumtree.update_priority(index, new_priority)
+        for index, new_priority in zip(self._sampled_indices, new_priorities):
+            self._storage.update_priority(index, abs(new_priority) + self.min_priority)
 
     def sample(self):
         """Randomly samples a batch of experiences from buffer.
@@ -109,23 +114,30 @@ class PrioritizedReplayBuffer:
             list: a randomly sampled list of objects stored in the buffer
 
         """
-        if len(self.sumtree) < self.batch_size:
+        if len(self._storage) < self.batch_size:
             raise IndexError("not enough items in buffer to sample(), try again later")
 
-        self.sampled_indices.clear()
-        range_size = self.sumtree.sum / self.batch_size
+        self._sampled_indices.clear()
+        sample_priorities = deque()
+        range_size = self._storage.sum / self.batch_size
 
         for batch, batch_next in zip(
                 range(self.batch_size), range(1, self.batch_size + 1)):
             priority = random.uniform(
                 range_size * batch,
                 range_size * batch_next)
-            index = self.sumtree.retrieve(priority)
-            self.sampled_indices.append(index)
+            index = self._storage.retrieve(priority)
+            self._sampled_indices.append(index)
+            priority = self._storage.get_priority(index)
+            sample_priorities.append(priority)
 
-        experiences = [self.sumtree[idx] for idx in self.sampled_indices]
+        experiences = [self._storage[idx] for idx in self._sampled_indices]
 
-        return self._unpack_samples(experiences)
+        frac_n = np.full(self.batch_size, 1 / self._storage.sum)
+        frac_p_i = 1 / np.array(sample_priorities)
+        importance_sampling_weights = [n / p for n, p in zip(frac_n, frac_p_i)]
+
+        return (importance_sampling_weights,) + self._unpack_samples(experiences)
 
     def _unpack_samples(self, samples):
         """Unpacks a list of Experience samples into tuples."""
@@ -152,11 +164,11 @@ class PrioritizedReplayBuffer:
 
         """
         try:
-            item = self.sumtree[index]
+            item = self._storage[index]
         except IndexError:
             raise
         return item
 
     def __len__(self):
         """Return the current size of internal buffer."""
-        return len(self.sumtree)
+        return len(self._storage)
