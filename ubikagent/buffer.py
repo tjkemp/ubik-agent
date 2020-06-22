@@ -139,6 +139,10 @@ class PrioritizedReplayBuffer:
 
         return (importance_sampling_weights,) + self._unpack_samples(experiences)
 
+    def sum(self):
+        """Returns the total sum of priorities within the buffer."""
+        return self._storage.sum
+
     def _unpack_samples(self, samples):
         """Unpacks a list of Experience samples into tuples."""
 
