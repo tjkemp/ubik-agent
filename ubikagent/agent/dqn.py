@@ -238,17 +238,33 @@ class DQNAgentWithPER(DQNAgent):
 
     def __init__(self, *arg, **kwargs):
         super().__init__(*arg, **kwargs)
+
         self.memory = PrioritizedReplayBuffer(
             self.replay_buffer_size, self.batch_size, seed=self.seed)
+        self._td_errors = np.array([])
+        self._is_weights = np.array([])
+
+    def new_episode(self):
+        """Returns statistics on the previous episode."""
+
+        history = {
+            'epsilon': self.epsilon,
+            'loss': self._loss_history,
+            'td_error': self._td_errors,
+            'is_weights': self._is_weights,
+        }
+
+        self._loss_history.clear()
+        self._td_errors = np.array([])
+        self._is_weights = np.array([])
+        return history
 
     def step(self, state, action, reward, next_state, done):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
-        # we need a default priority
-        default_priority = 0.1
         self.memory.add(
-            default_priority, state[0], action, reward[0], next_state[0], done[0])
+            state[0], action, reward[0], next_state[0], done[0])
 
         self.timestep += 1
 
@@ -270,8 +286,8 @@ class DQNAgentWithPER(DQNAgent):
             gamma (float): discount factor
 
         """
-        is_weights, states, actions, rewards, next_states, dones = experiences
-        is_weights = torch.as_tensor(is_weights, dtype=torch.float).unsqueeze(-1)
+        weights, states, actions, rewards, next_states, dones = experiences
+        is_weights = torch.as_tensor(weights, dtype=torch.float).unsqueeze(-1)
         states = torch.as_tensor(states, dtype=torch.float)
         actions = torch.as_tensor(actions, dtype=torch.long).unsqueeze(-1)
         rewards = torch.as_tensor(rewards, dtype=torch.float).unsqueeze(-1)
@@ -279,7 +295,7 @@ class DQNAgentWithPER(DQNAgent):
         dones = torch.as_tensor(dones, dtype=torch.int8).unsqueeze(-1)
 
         Q_targets_next = self.qnetwork_target(
-            next_states).detach().max(1)[0].unsqueeze(1)  # noqa: E501
+            next_states).detach().max(1)[0].unsqueeze(1)
 
         Q_targets = is_weights * (rewards + (gamma * Q_targets_next * (1 - dones)))
 
@@ -295,5 +311,8 @@ class DQNAgentWithPER(DQNAgent):
         self._loss_history.append(loss.float().item())
 
         td_errors = Q_targets.detach().numpy() - Q_expected.detach().numpy()
+        td_errors = np.abs(td_errors)
+        self._td_errors = np.append(self._td_errors, td_errors)
+        self._is_weights = np.append(self._is_weights, weights)
 
         return td_errors.reshape(-1).tolist()

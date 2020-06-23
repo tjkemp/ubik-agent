@@ -59,8 +59,16 @@ class PrioritizedReplayBuffer:
     Related paper: https://arxiv.org/pdf/1511.05952.pdf
 
     """
-    def __init__(self, buffer_size, batch_size, min_priority=0.0001, seed=None):
-        """Initialize an instance.
+    def __init__(
+            self,
+            buffer_size,
+            batch_size,
+            epsilon=0.001,
+            alpha=0.6,
+            beta=0.6,
+            seed=None,
+    ):
+        """Initialize an instance of Prioritized Experience Replay.
 
         Raises:
             ValueError: max_buffer must be a power of two
@@ -68,7 +76,11 @@ class PrioritizedReplayBuffer:
         Args:
             buffer_size (int): maximum size of buffer
             batch_size (int): size of training batches to sample
-            min_priority (float): value that is added to all new priorities
+            epsilon (float): value that is added to all priorities
+            alpha (float): exponent which determines how much priorization is
+                used, with alpha == 0 corresponding to the uniform case
+            beta (float): important sampling bias correction exponent, where
+                beta == 1 corresponds to full bias correction
             seed (int): optional, seed for randomness
 
         """
@@ -77,20 +89,33 @@ class PrioritizedReplayBuffer:
         except ValueError:
             raise
         self.batch_size = batch_size
-        self.min_priority = min_priority
+        self.epsilon = epsilon
+        self.alpha = alpha
+        self.beta = beta
+
         self.Experience = namedtuple(
             "Experience",
             ["state", "action", "reward", "next_state", "done"])
+        self.highest_priority = 0.1
+        self.highest_isweight = 0.
         self._sampled_indices = deque()
 
         if seed is not None:
             self.seed = random.seed(seed)
 
-    def add(self, priority, state, action, reward, next_state, done):
+    def add(self, state, action, reward, next_state, done, priority=None):
         """Adds a new experience into buffer."""
 
         exp = self.Experience(state, action, reward, next_state, done)
-        self._storage.append(abs(priority) + self.min_priority, exp)
+
+        if priority is not None:
+            priority = pow(abs(priority) + self.epsilon, self.alpha)
+            if priority > self.highest_priority:
+                self.highest_priority = priority
+        else:
+            priority = self.highest_priority
+
+        self._storage.append(priority, exp)
 
     def update_priorities(self, new_priorities):
         """Updates priorities for previously sampled batch of experience."""
@@ -100,8 +125,14 @@ class PrioritizedReplayBuffer:
                 "sample() should be called before called right before calling this method, "
                 "and length of argument 'new_priorities' should match batch_size")
 
+        new_priorities = np.power(np.abs(new_priorities) + self.epsilon, self.alpha)
+
+        max_priority = np.max(new_priorities)
+        if max_priority > self.highest_priority:
+            self.highest_priority = max_priority
+
         for index, new_priority in zip(self._sampled_indices, new_priorities):
-            self._storage.update_priority(index, abs(new_priority) + self.min_priority)
+            self._storage.update_priority(index, new_priority.item())
 
     def sample(self):
         """Randomly samples a batch of experiences from buffer.
@@ -118,14 +149,15 @@ class PrioritizedReplayBuffer:
             raise IndexError("not enough items in buffer to sample(), try again later")
 
         self._sampled_indices.clear()
+        range_size = self.sum() / self.batch_size
         sample_priorities = deque()
-        range_size = self._storage.sum / self.batch_size
 
-        for batch, batch_next in zip(
+        for range_start, range_end in zip(
                 range(self.batch_size), range(1, self.batch_size + 1)):
+
             priority = random.uniform(
-                range_size * batch,
-                range_size * batch_next)
+                range_size * range_start, range_size * range_end)
+
             index = self._storage.retrieve(priority)
             self._sampled_indices.append(index)
             priority = self._storage.get_priority(index)
@@ -133,9 +165,13 @@ class PrioritizedReplayBuffer:
 
         experiences = [self._storage[idx] for idx in self._sampled_indices]
 
-        frac_n = np.full(self.batch_size, 1 / self._storage.sum)
-        frac_p_i = 1 / np.array(sample_priorities)
-        importance_sampling_weights = [n / p for n, p in zip(frac_n, frac_p_i)]
+        importance_sampling_weights = np.power(
+            self.sum() * np.array(sample_priorities), -self.beta)
+
+        max_weight = np.max(importance_sampling_weights)
+        if max_weight > self.highest_isweight:
+            self.highest_isweight = max_weight
+        importance_sampling_weights /= self.highest_isweight
 
         return (importance_sampling_weights,) + self._unpack_samples(experiences)
 
