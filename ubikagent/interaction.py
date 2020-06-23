@@ -35,6 +35,43 @@ class BaseInteraction:
         """
         raise NotImplementedError("run() not implemented")
 
+    def _callback(
+            self,
+            event,
+            callbacks,
+            history=None,
+            state=None,
+            action=None,
+            env_info=None
+    ):
+        """Iterates over callbacks and calls a function appropriate to the
+        callback event.
+
+        This function is used within `run()` to handle callbacks.
+
+        Callback events with 'process_' prefix observe and possibly alter
+        output received from and agent or an environment to make it easier
+        to work with different kinds of outputs.
+
+        Other events, start with either 'begin_' or 'end_' can be used
+        similarly to observe and possibly alter states of either the agent
+        or the environment.
+
+        """
+        for callback in callbacks:
+            try:
+                method = getattr(callback, event)
+            except AttributeError as err:
+                print(f"Error while calling event '{event}' in callback {callback}: {err}")
+            if event == 'process_state':
+                return method(state)
+            elif event == 'process_action':
+                return method(action)
+            elif event == 'process_env_info':
+                return method(env_info)
+            else:
+                method(self._agent, self._env, history)
+
     def _print_episode_statistics(self, history):
         """Prints a single row of statistics on episode performance."""
         print_episode_statistics(history)
@@ -63,7 +100,9 @@ class Interaction(BaseInteraction):
             max_time_steps=100,
             score_target=None,
             score_window_size=100,
-            verbose=1):
+            callbacks=[],
+            verbose=1,
+    ):
         """Runs the agent in the environment for a given number of episodes.
 
         Args:
@@ -72,6 +111,8 @@ class Interaction(BaseInteraction):
             score_target (float): mean total rewards collected (within a window)
                 at which to end training
             score_window_size (int): moving window size to calculate `score_target`
+            callbacks (list): list of instances of `Callback` which are called
+                during execution
             verbose (bool): amount of printed output, if > 0 print progress bar
 
         Side effects:
@@ -89,9 +130,14 @@ class Interaction(BaseInteraction):
         if score_target is None:
             score_target = float('inf')
 
+        self._callback('begin_training', callbacks)
+
         for i_episode in range(1, num_episodes + 1):
 
             state = self._env.reset()
+            state = self._callback('process_state', callbacks)
+
+            self._callback('begin_episode', callbacks)
 
             episode_rewards = 0.
 
@@ -99,23 +145,30 @@ class Interaction(BaseInteraction):
 
                 # choose and execute an action in the environment
                 action = self._agent.act(state)
+                action = self._callback(
+                    'process_action', callbacks, action=action)
                 env_info = self._env.step(action)
+                env_info = self._callback(
+                    'process_env_info', callbacks, env_info=env_info)
 
                 # observe the state and the reward
                 next_state, reward, done, _ = env_info
+                next_state = self._callback(
+                    'process_state', callbacks, state=next_state)
 
                 # save action, observation and reward for learning
                 self._agent.step(state, action, reward, next_state, done)
+
                 state = next_state
-
                 episode_rewards += reward
-
                 if done:
                     break
 
             agent_metrics = self._agent.new_episode()
             history.add_from(agent_metrics)
             history.update(timestep, episode_rewards)
+
+            self._callback('end_episode', callbacks)
 
             if verbose:
                 self._print_episode_statistics(history)
@@ -124,6 +177,8 @@ class Interaction(BaseInteraction):
                 if verbose:
                     self._print_target_reached(history)
                 break
+
+        self._callback('end_training', callbacks)
 
         return history.as_dict()
 
