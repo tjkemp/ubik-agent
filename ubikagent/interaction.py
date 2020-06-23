@@ -7,10 +7,10 @@ from ubikagent.callback import BaseCallback, InteractionAdapter
 class BaseInteraction:
     """Base class facilitating the interaction between an agent and an environment.
 
-    This class can be extended with environment specific implementations.
+    This class should be extended with specific implementation.
 
     """
-    def __init__(self, agent, env, adapter=None, base_callbacks=None):
+    def __init__(self, agent, env, *args, **kwargs):
         """Creates an instance of an interaction between an agent and an environment.
 
         Args:
@@ -21,16 +21,6 @@ class BaseInteraction:
         """
         self._agent = agent
         self._env = env
-
-        if adapter is None:
-            self._adapter = InteractionAdapter()
-        else:
-            self._adapter = adapter
-
-        if base_callbacks is None:
-            self._default_callbacks = [BaseCallback()]
-        else:
-            self._default_callbacks = base_callbacks
 
     def run(self, num_episodes, max_time_steps):
         """Implements the loop to make the agent interact in the environment.
@@ -44,70 +34,41 @@ class BaseInteraction:
         """
         raise NotImplementedError("run() not implemented")
 
-    def _hook(
-            self,
-            event,
-            data=None,
-    ):
-        """Calls an adapter function appropriate to the event.
-
-        This function is used by `run()` to run methods of InteractionAdapter
-        and extend Interaction class to handle non-standard environments and
-        agents. See InteractionAdapter for methods that can be used to extend
-        Interaction.
-
-        """
-        try:
-            method = getattr(self._adapter, event)
-        except AttributeError as err:
-            print(f"Error while calling event '{event}' in adapter: {err}")
-            raise
-
-        if event.startswith('agent_'):
-            return method(self._agent, data)
-        elif event.startswith('env_'):
-            return method(self._env, data)
-
-        raise NotImplementedError(
-            f"adapter does not implement method {event}")
-
-    def _callback(
-            self,
-            event,
-            data=None,
-    ):
-        """Iterates over callbacks and for each calls a function appropriate
-        to the given event.
-
-        This function is used within `run()` to handle callbacks. Callbacks
-        can be used to observe and possibly alter states of either the agent
-        or the environment. Events start with prefix 'begin_' or 'end_'.
-
-        """
-        for callback in self._callbacks:
-            try:
-                method = getattr(callback, event)
-            except AttributeError as err:
-                print(f"Error while calling event '{event}' in callback {callback}: {err}")
-                raise
-
-            method(self, self._agent, self._env, self.history)
-
 
 class Interaction(BaseInteraction):
     """Class facilitates the interaction between an agent and OpenAI Gym environment."""
 
-    def __init__(self, agent, env, history=None):
-        """Creates an instance of simulation.
+    def __init__(self, agent, env, history=None, adapter=None, base_callbacks=None):
+        """Creates an instance of interaction between an agent and an environment.
 
         Args:
             agent (ubikagent.agent.Agent): an instance of Agent
             env (gym.Env): an instance of Gym environment
-            history (ubikagent.History): if None, a new instance is created
+            history (ubikagent.History): if None, a new instance of training
+                history is created
+            adapter (ubikagent.InteractionAdapter): class to adapt interaction
+                to agent and environment, if they are not compliant with Gym
+            base_callbacks (list of ubikagent.Callback): list of callbacks
+                which are called wihtin the `run()` to observe
 
         """
         super().__init__(agent, env)
-        self.history = History()
+
+        if history is None:
+            self.history = History()
+        else:
+            self.history = history
+
+        if adapter is None:
+            self._adapter = InteractionAdapter()
+        else:
+            self._adapter = adapter
+
+        if base_callbacks is None:
+            self._default_callbacks = [BaseCallback()]
+        else:
+            self._default_callbacks = base_callbacks
+
         self.i_episode = 0
         self.timestep = 1
         self.episode_rewards = 0.
@@ -125,11 +86,14 @@ class Interaction(BaseInteraction):
     ):
         """Runs the agent in the environment for a given number of episodes.
 
+        `run()` can be ran multiple times with an instance of Interaction and
+        the state is not lost inbetween.
+
         Args:
             num_episodes (int): number of episodes to run, >= 1
             max_time_steps (int): maximum number of timesteps per episode
             callbacks (list): list of instances of `Callback` which are called
-                during execution
+                during execution in addition to `base_callbacks`
             verbose (bool): amount of printed output, if > 0 print progress bar
 
         Side effects:
@@ -188,6 +152,55 @@ class Interaction(BaseInteraction):
         self._callback('end_training')
 
         return self.history.as_dict()
+
+    def _hook(
+            self,
+            event,
+            data=None,
+    ):
+        """Calls an adapter function appropriate to the event.
+
+        This function is used by `run()` to run methods of InteractionAdapter
+        and extend Interaction class to handle non-standard environments and
+        agents. See InteractionAdapter for methods that can be used to extend
+        Interaction.
+
+        """
+        try:
+            method = getattr(self._adapter, event)
+        except AttributeError as err:
+            print(f"Error while calling event '{event}' in adapter: {err}")
+            raise
+
+        if event.startswith('agent_'):
+            return method(self._agent, data)
+        elif event.startswith('env_'):
+            return method(self._env, data)
+
+        raise NotImplementedError(
+            f"adapter does not implement method {event}")
+
+    def _callback(
+            self,
+            event,
+            data=None,
+    ):
+        """Iterates over callbacks and for each calls a function appropriate
+        to the given event.
+
+        This function is used within `run()` to handle callbacks. Callbacks
+        can be used to observe and possibly alter states of either the agent
+        or the environment. Events start with prefix 'begin_' or 'end_'.
+
+        """
+        for callback in self._callbacks:
+            try:
+                method = getattr(callback, event)
+            except AttributeError as err:
+                print(f"Error while calling event '{event}' in callback {callback}: {err}")
+                raise
+
+            method(self, self._agent, self._env, self.history)
 
 
 class UnityInteraction(Interaction):
