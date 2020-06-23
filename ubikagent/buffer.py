@@ -122,8 +122,9 @@ class PrioritizedReplayBuffer:
 
         if len(new_priorities) != len(self._sampled_indices):
             raise ValueError(
-                "sample() should be called before called right before calling this method, "
-                "and length of argument 'new_priorities' should match batch_size")
+                "sample() should be called before called right before "
+                "calling this method, and length of argument "
+                "'new_priorities' should match batch_size")
 
         new_priorities = np.power(np.abs(new_priorities) + self.epsilon, self.alpha)
 

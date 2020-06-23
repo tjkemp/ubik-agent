@@ -1,4 +1,3 @@
-import pytest
 from collections import namedtuple
 
 from ubikagent.buffer import PrioritizedReplayBuffer
@@ -46,7 +45,7 @@ class TestPrioritizedReplayBuffer:
 
         assert buffer.sum() == priority * buffer_size + buffer.min_priority * buffer_size
 
-        samples = buffer.sample()
+        _ = buffer.sample()
         new_priority = 100.0
         new_priorities_for_samples = [new_priority for _ in range(batch_size)]
         buffer.update_priorities(new_priorities_for_samples)
