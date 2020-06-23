@@ -31,3 +31,19 @@ class TestHistory:
         output = hist.get_latest('test_key')
 
         assert output == expected_output
+
+    def test_add(self):
+
+        hist = History()
+        episode_length = [100, 200]
+        episode_rewards = [[4.0, 5.0], [2.0, 4.0]]
+        for length, rewards in zip(episode_length, episode_rewards):
+            hist.add('episode_length', length)
+            hist.add('reward', rewards, aggregators=['max', 'min', 'mean', 'std'])
+
+        assert hist.num_episodes == 2
+        assert hist.episode_length == 200
+        assert hist.reward_max == 4.0
+        assert hist.reward_min == 2.0
+        assert hist.reward_mean == 3.0
+        assert hist.reward_std == 1.0
