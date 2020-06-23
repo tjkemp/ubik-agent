@@ -25,7 +25,7 @@ I don't consider the version to even be 0.1 yet, so expect thing to change and b
 - [x] add more environments and an easier way to use and install them
 - [x] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
 - [x] add hyperparameter tuning and improve the models
-- [ ] add Prioritized Experience Replay
+- [x] add Prioritized Experience Replay
 - [x] add environments for Sarsa type agents
 - [ ] add an example of training and agent from pixel data
 - [ ] upgrade ML-Agents package to the latest stable release (mainly because v0.4.0 environments are too unstable to train properly)

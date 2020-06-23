@@ -6,18 +6,19 @@ from unityagents import UnityEnvironment
 
 from ubikagent import UnityInteraction
 from ubikagent.agent import DQNAgent, UnityRandomAgent
+from ubikagent.agent.dqn import DQNAgentWithPER
 from ubikagent.helper import (
     get_model_dir, create_model_dir, save_graph, save_history, parse_and_run)
 
 ENV_PATH = './environments/Banana_Linux/Banana.x86_64'
 
 MODEL_PARAMS = {
-    'learning_rate': 5e-4,
+    'learning_rate': 5e-4,  # 5e-4
     'batch_size': 64,
     'tau': 1e-3,
-    'gamma': 0.99,
+    'gamma': 0.9997,
     'update_interval': 4,
-    'replay_buffer_size': 1e5,
+    'replay_buffer_size': 65536,  # 1e5
     'seed': 4,
 }
 
@@ -37,7 +38,7 @@ class BananaCollector:
 
         # create an agent
         state_size, action_size, num_agents = UnityInteraction.stats(env)
-        agent = DQNAgent(state_size, action_size, num_agents, **MODEL_PARAMS)
+        agent = DQNAgentWithPER(state_size, action_size, num_agents, **MODEL_PARAMS)
 
         # and create an interaction between them
         sim = UnityInteraction(agent, env)

@@ -61,6 +61,45 @@ class History:
         """Returns the training history as a dictionary."""
         return copy.deepcopy(self._history)
 
+    def add(self, key, value, aggregators=['max', 'mean']):
+        """Updates training/run history data point `key` with a value or a
+        aggregates of a list of values.
+
+        Possible aggregator functions to run on a list of values are:
+        'max', 'min, 'mean', 'std'.
+
+        Args:
+            key (str): name of the metric
+            value (float or list of floats): value to store, or a list of
+                values to aggregate
+            aggregators (list of str): if `value` is a list, `aggregators` are
+                the aggragate operators to run on the list
+
+        """
+        if isinstance(value, (int, float)):
+
+            if key not in self._history:
+                self._history[key] = []
+            self._history[key].append(value)
+
+        elif isinstance(value, (np.ndarray, list)):
+
+            aggregate_fns = {
+                'max': np.max,
+                'min': np.min,
+                'mean': np.mean,
+                'std': np.std,
+            }
+
+            for aggregate in aggregators:
+
+                aggr_key = f"{key}_{aggregate}"
+                aggr_value = aggregate_fns[aggregate](value).item()
+                if aggr_key not in self._history:
+                    self._history[aggr_key] = []
+
+                self._history[aggr_key].append(aggr_value)
+
     def update(self, episode_length, episode_rewards):
         """Updates internal training history.
 
@@ -112,7 +151,7 @@ class History:
         self._history['reward_mean'].append(reward_episode_mean)
         self._history['reward_std'].append(reward_episode_std)
 
-    def add_from(self, metrics):
+    def add_from(self, metrics, aggregators=None):
         """Adds episode related metrics into history from a dictionary.
 
         This function should be called at the beginning or at the end
@@ -132,10 +171,7 @@ class History:
             return
 
         for key, value in metrics.items():
-            try:
-                self._history[key].append(value)
-            except KeyError:
-                self._history[key] = [value]
+            self.add(key, value)
 
     def _calculate_score(self, episode_rewards):
         """Calculates training score for `update()`.
