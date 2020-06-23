@@ -41,10 +41,10 @@ def print_episode_statistics(history, multi_agent=False):
     """Prints a single row of statistics on episode performance."""
 
     human_readable = {
-        'episode_length': "Steps",
+        'episode_length': "steps",
     }
 
-    print(f"Episode {history.num_episodes}", end='')
+    print(f"episode {history.num_episodes}", end='')
 
     for key in history.keys():
 
@@ -52,9 +52,9 @@ def print_episode_statistics(history, multi_agent=False):
         if key in human_readable:
             metric_name = human_readable[key]
         else:
-            metric_name = key.capitalize()
+            metric_name = key
 
-        print(f" \t{metric_name}: {metric_value:.2f}", end='')
+        print(f" \t{metric_name}: {metric_value:.3g}", end='')
 
     print()
 
@@ -83,7 +83,7 @@ def parse_and_run(project):
 
     """
     parser = argparse.ArgumentParser(
-        description=f"Runs or trains an agent in an OpenGym environment.")
+        description="Runs or trains an agent in an OpenGym environment.")
 
     subparsers = parser.add_subparsers(
         title='method', dest='method', help='additional help')
