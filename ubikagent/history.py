@@ -109,7 +109,8 @@ class History:
         self.add('episode_length', episode_length)
 
         if isinstance(episode_rewards, list) and len(episode_rewards) > 1:
-            self.add('reward', episode_rewards)
+            aggregators = ['max', 'min', 'mean', 'std']
+            self.add('reward', episode_rewards, aggregators=aggregators)
         elif isinstance(episode_rewards, list) and len(episode_rewards) == 1:
             self.add('reward', episode_rewards[0])
         else:
