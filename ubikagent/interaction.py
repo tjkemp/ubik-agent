@@ -2,16 +2,15 @@ import numpy as np
 
 from ubikagent.history import History
 from ubikagent.helper import print_episode_statistics, print_target_reached
-
+from ubikagent.callback import BaseCallback, InteractionAdapter
 
 class BaseInteraction:
     """Base class facilitating the interaction between an agent and an environment.
 
-    This class should be extended with environment specific implementations of
-    run() and stats().
+    This class should be extended with specific implementation.
 
     """
-    def __init__(self, agent, env):
+    def __init__(self, agent, env, *args, **kwargs):
         """Creates an instance of an interaction between an agent and an environment.
 
         Args:
@@ -35,27 +34,46 @@ class BaseInteraction:
         """
         raise NotImplementedError("run() not implemented")
 
-    def _print_episode_statistics(self, history):
-        """Prints a single row of statistics on episode performance."""
-        print_episode_statistics(history)
-
-    def _print_target_reached(self, history):
-        """Prints a notification that target score has been reached."""
-        print_target_reached(history)
-
 
 class Interaction(BaseInteraction):
     """Class facilitates the interaction between an agent and OpenAI Gym environment."""
 
-    def __init__(self, agent, env):
-        """Creates an instance of simulation.
+    def __init__(self, agent, env, history=None, adapter=None, base_callbacks=None):
+        """Creates an instance of interaction between an agent and an environment.
 
         Args:
-            agent: an instance of class implementing Agent
-            env: an instance of Gym environment
+            agent (ubikagent.agent.Agent): an instance of Agent
+            env (gym.Env): an instance of Gym environment
+            history (ubikagent.History): if None, a new instance of training
+                history is created
+            adapter (ubikagent.InteractionAdapter): class to adapt interaction
+                to agent and environment, if they are not compliant with Gym
+            base_callbacks (list of ubikagent.Callback): list of callbacks
+                which are called wihtin the `run()` to observe
 
         """
         super().__init__(agent, env)
+
+        if history is None:
+            self.history = History()
+        else:
+            self.history = history
+
+        if adapter is None:
+            self._adapter = InteractionAdapter()
+        else:
+            self._adapter = adapter
+
+        if base_callbacks is None:
+            self._default_callbacks = [BaseCallback()]
+        else:
+            self._default_callbacks = base_callbacks
+
+        self.i_episode = 0
+        self.timestep = 1
+        self.episode_rewards = 0.
+        self.stop_training = False
+        self.verbose = 0
 
     def run(
             self,
@@ -63,15 +81,19 @@ class Interaction(BaseInteraction):
             max_time_steps=100,
             score_target=None,
             score_window_size=100,
-            verbose=1):
+            callbacks=[],
+            verbose=1,
+    ):
         """Runs the agent in the environment for a given number of episodes.
+
+        `run()` can be ran multiple times with an instance of Interaction and
+        the state is not lost inbetween.
 
         Args:
             num_episodes (int): number of episodes to run, >= 1
             max_time_steps (int): maximum number of timesteps per episode
-            score_target (float): mean total rewards collected (within a window)
-                at which to end training
-            score_window_size (int): moving window size to calculate `score_target`
+            callbacks (list): list of instances of `Callback` which are called
+                during execution in addition to `base_callbacks`
             verbose (bool): amount of printed output, if > 0 print progress bar
 
         Side effects:
@@ -83,49 +105,102 @@ class Interaction(BaseInteraction):
 
         """
 
-        history = History()
-        self._agent.new_episode()
+        self.verbose = verbose
+        self._callbacks = self._default_callbacks + callbacks
 
-        if score_target is None:
-            score_target = float('inf')
+        self._callback('begin_training')
 
-        for i_episode in range(1, num_episodes + 1):
+        for _ in range(1, num_episodes + 1):
 
-            state = self._env.reset()
+            self.i_episode += 1
+            self.episode_rewards = 0.
 
-            episode_rewards = 0.
+            self._hook('agent_reset')
+            state = self._hook('env_reset')
 
-            for timestep in range(1, max_time_steps + 1):
+            self._callback('begin_episode', callbacks)
+
+            for idx in range(1, max_time_steps + 1):
+
+                self.episode_timestep = idx
 
                 # choose and execute an action in the environment
-                action = self._agent.act(state)
-                env_info = self._env.step(action)
+                action = self._hook('agent_act', state)
+                env_info = self._hook('env_step', action)
 
-                # observe the state and the reward
-                next_state, reward, done, _ = env_info
+                # observe the new state and the reward
+                next_state, reward, done, info = env_info
+                observation = (state, action, reward, next_state, done)
 
                 # save action, observation and reward for learning
-                self._agent.step(state, action, reward, next_state, done)
-                state = next_state
+                self._hook('agent_observe', observation)
 
-                episode_rewards += reward
+                self.episode_rewards += reward
+                state = next_state
 
                 if done:
                     break
 
-            agent_metrics = self._agent.new_episode()
-            history.add_from(agent_metrics)
-            history.update(timestep, episode_rewards)
+            agent_state = self._hook('agent_reset')
+            self.history.add_from(agent_state)
 
-            if verbose:
-                self._print_episode_statistics(history)
+            self._callback('end_episode')
 
-            if history.score >= score_target:
-                if verbose:
-                    self._print_target_reached(history)
+            if self.stop_training:
                 break
 
-        return history.as_dict()
+        self._callback('end_training')
+
+        return self.history.as_dict()
+
+    def _hook(
+            self,
+            event,
+            data=None,
+    ):
+        """Calls an adapter function appropriate to the event.
+
+        This function is used by `run()` to run methods of InteractionAdapter
+        and extend Interaction class to handle non-standard environments and
+        agents. See InteractionAdapter for methods that can be used to extend
+        Interaction.
+
+        """
+        try:
+            method = getattr(self._adapter, event)
+        except AttributeError as err:
+            print(f"Error while calling event '{event}' in adapter: {err}")
+            raise
+
+        if event.startswith('agent_'):
+            return method(self._agent, data)
+        elif event.startswith('env_'):
+            return method(self._env, data)
+
+        raise NotImplementedError(
+            f"adapter does not implement method {event}")
+
+    def _callback(
+            self,
+            event,
+            data=None,
+    ):
+        """Iterates over callbacks and for each calls a function appropriate
+        to the given event.
+
+        This function is used within `run()` to handle callbacks. Callbacks
+        can be used to observe and possibly alter states of either the agent
+        or the environment. Events start with prefix 'begin_' or 'end_'.
+
+        """
+        for callback in self._callbacks:
+            try:
+                method = getattr(callback, event)
+            except AttributeError as err:
+                print(f"Error while calling event '{event}' in callback {callback}: {err}")
+                raise
+
+            method(self, self._agent, self._env, self.history)
 
 
 class UnityInteraction(Interaction):
@@ -232,3 +307,11 @@ class UnityInteraction(Interaction):
                 break
 
         return history.as_dict()
+
+    def _print_episode_statistics(self, history):
+        """Prints a single row of statistics on episode performance."""
+        print_episode_statistics(history)
+
+    def _print_target_reached(self, history):
+        """Prints a notification that target score has been reached."""
+        print_target_reached(history)

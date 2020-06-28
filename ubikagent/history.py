@@ -21,10 +21,7 @@ class History:
         """Resets internal training history."""
 
         self._scores_window = deque(maxlen=self.score_window_size)
-        self._history = {
-            'episode_length': [],
-            'score': []
-        }
+        self._history = {}
 
     @property
     def num_episodes(self):
@@ -109,47 +106,18 @@ class History:
                 by agent(s)
 
         """
-        self._history['episode_length'].append(episode_length)
+        self.add('episode_length', episode_length)
 
         if isinstance(episode_rewards, list) and len(episode_rewards) > 1:
-            self._update_multi_agent_history(episode_rewards)
+            aggregators = ['max', 'min', 'mean', 'std']
+            self.add('reward', episode_rewards, aggregators=aggregators)
         elif isinstance(episode_rewards, list) and len(episode_rewards) == 1:
-            self._update_single_agent_history(episode_rewards[0])
+            self.add('reward', episode_rewards[0])
         else:
-            self._update_single_agent_history(episode_rewards)
+            self.add('reward', episode_rewards)
 
         score = self._calculate_score(episode_rewards)
-        self._history['score'].append(score)
-
-    def _update_single_agent_history(self, episode_reward):
-
-        if 'reward' not in self._history:
-            self._history['reward'] = [episode_reward]
-        else:
-            self._history['reward'].append(episode_reward)
-
-    def _update_multi_agent_history(self, episode_rewards):
-
-        keys = [
-            'reward_max',
-            'reward_min',
-            'reward_mean',
-            'reward_std',
-        ]
-
-        for key in keys:
-            if key not in self._history:
-                self._history[key] = []
-
-        reward_episode_max = np.max(episode_rewards)
-        reward_episode_min = np.min(episode_rewards)
-        reward_episode_mean = np.mean(episode_rewards)
-        reward_episode_std = np.std(episode_rewards)
-
-        self._history['reward_max'].append(reward_episode_max)
-        self._history['reward_min'].append(reward_episode_min)
-        self._history['reward_mean'].append(reward_episode_mean)
-        self._history['reward_std'].append(reward_episode_std)
+        self.add('score', score)
 
     def add_from(self, metrics, aggregators=None):
         """Adds episode related metrics into history from a dictionary.
