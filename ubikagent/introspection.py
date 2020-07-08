@@ -5,9 +5,9 @@ def get_methods(cls, excluded_methods=['cli']):
 
     methods = [
         item for item in dir(cls) if
-        not item.startswith('_') and
-        item.islower() and
-        inspect.ismethod(getattr(cls, item))]
+        not item.startswith('_')
+        and item.islower()  # noqa
+        and inspect.ismethod(getattr(cls, item))]  # noqa
 
     for method in excluded_methods:
         methods.remove(method)
