@@ -9,7 +9,7 @@ from ubikagent.data_structure import SumTree
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, buffer_size, batch_size, seed):
+    def __init__(self, buffer_size, batch_size, seed=None):
         """Initialize a ReplayBuffer object.
 
         Args:
@@ -23,7 +23,8 @@ class ReplayBuffer:
         self.Experience = namedtuple(
             "Experience",
             ["state", "action", "reward", "next_state", "done"])
-        self.seed = random.seed(seed)
+        if seed is not None:
+            self.seed = random.seed(seed)
 
     def add(self, state, action, reward, next_state, done):
         """Add a new experience into buffer."""
