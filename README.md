@@ -8,7 +8,7 @@ This project started as an excercise in training a Deep Q-Learning agent to navi
 
 Currently, I'm working on turning this project into a more general framework to train different agents in several different environments. I'm toying with the idea that this project could work as glue between algorithm libraries, optimization packages and training environments. Although, the purpose is still mainly for myself to learn more about Deep Reinforcement Learning by creating the algorithms.
 
-I don't consider the version to even be 0.1 yet, so expect thing to change and break.
+I don't consider the version to be v0.1 quite yet, so expect thing to change and break.
 
 ### Implemented algorithms and environments
 
@@ -18,19 +18,31 @@ I don't consider the version to even be 0.1 yet, so expect thing to change and b
 | DDPG                     | Continuous/Continuous | Reacher (Unity)      |
 | SarsaMax, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
 
-### Future improvements for version 0.1:
+### Improvements for version 0.1:
 - [x] add DDPG algorithm
 - [x] add pytest tests
 - [x] add Interaction class to serve as a middleman between the environment and the agent, to remove need for custom handling loops
 - [x] add more environments and an easier way to use and install them
 - [x] add better measurement (mean/min/max, episode lenghts, details of exploration, etc)
-- [x] add hyperparameter tuning and improve the models
+- [x] add hyperparameter tuning example
 - [x] add Prioritized Experience Replay
-- [x] add environments for Sarsa type agents
-- [ ] add an example of training and agent from pixel data
-- [ ] upgrade ML-Agents package to the latest stable release (mainly because v0.4.0 environments are too unstable to train properly)
-- [ ] add PPO, and other algorithms
+- [x] add Sarsa/Q-Learning agents and examples
+- [x] add callbacks for flexible logging, and adapters to handle non-standard environments and agents
+- [x] make runs reproducible
+- [ ] add OpenAI Gym examples
+- [ ] upgrade ML-Agents v0.4.0 to the most recent version
+- [ ] update usage examples and architecture diagrams
+
+### Improvements for version 0.2
+- [ ] add as simple as can be vanilla versions of DQN and DDPG
+- [ ] add basic algorithms like Policy Iteration and Vanilla Policy Gradient
+- [ ] make DQN and DDPG agents capable of learning from pixel data
+
+### Improvements for later version
 - [ ] add proper documentation
+- [ ] add examples of using algorithms from other packages
+- [ ] add more advanced variations of DQN
+- [ ] add more advanced algorithms like PPO and SAC
 
 ## BananaCollector Environment
 
@@ -147,7 +159,7 @@ The modules `taxi.py`, `crawler.py` and `reacher.py` work similarly as the Banan
 ## Licenses and acknowledgements
 
 - This project is licensed under [MIT LICENSE](LICENSE).
-- The original code was inspired ny [Udacity Deep Reinforcement Learning nanodegree](https://github.com/udacity/deep-reinforcement-learning/) materials.
+- The original code was inspired by [Udacity Deep Reinforcement Learning nanodegree](https://github.com/udacity/deep-reinforcement-learning/) materials.
 
 ## Author
 

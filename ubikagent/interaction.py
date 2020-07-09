@@ -1,3 +1,6 @@
+import os
+import random
+
 import numpy as np
 
 from ubikagent.history import History
@@ -10,8 +13,10 @@ class BaseInteraction:
     This class should be extended with specific implementation.
 
     """
-    def __init__(self, agent, env, *args, **kwargs):
+    def __init__(self, agent, env, seed, *args, **kwargs):
         """Creates an instance of an interaction between an agent and an environment.
+
+        Sets the random seed for Python, Numpy and environment.
 
         Args:
             agent: an instance of a class implementing abstract class Agent
@@ -21,6 +26,10 @@ class BaseInteraction:
         """
         self._agent = agent
         self._env = env
+        self._seed = seed
+        os.environ['PYTHONHASHSEED'] = str(seed)
+        np.random.seed(seed)
+        random.seed(seed)
 
     def run(self, num_episodes, max_time_steps):
         """Implements the loop to make the agent interact in the environment.
@@ -38,12 +47,13 @@ class BaseInteraction:
 class Interaction(BaseInteraction):
     """Class facilitates the interaction between an agent and OpenAI Gym environment."""
 
-    def __init__(self, agent, env, history=None, adapter=None, base_callbacks=None):
+    def __init__(self, agent, env, seed, history=None, adapter=None, base_callbacks=None):
         """Creates an instance of interaction between an agent and an environment.
 
         Args:
             agent (ubikagent.agent.Agent): an instance of Agent
             env (gym.Env): an instance of Gym environment
+            seed (int): a seed for `random` and `numpy`
             history (ubikagent.History): if None, a new instance of training
                 history is created
             adapter (ubikagent.InteractionAdapter): class to adapt interaction
@@ -52,13 +62,15 @@ class Interaction(BaseInteraction):
                 which are called wihtin the `run()` to observe
 
         """
-        super().__init__(agent, env)
+        super().__init__(agent, env, seed)
+        env.seed(seed)
 
         if history is None:
             self.history = History()
         else:
             self.history = history
 
+        # TODO: check adapter type
         if adapter is None:
             self._adapter = InteractionAdapter()
         else:
