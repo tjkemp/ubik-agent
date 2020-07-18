@@ -6,6 +6,8 @@ import numpy as np
 from ubikagent.history import History
 from ubikagent.helper import print_episode_statistics, print_target_reached
 from ubikagent.callback import BaseCallback, InteractionAdapter
+from ubikagent import exception
+
 
 class BaseInteraction:
     """Base class facilitating the interaction between an agent and an environment.
@@ -70,11 +72,14 @@ class Interaction(BaseInteraction):
         else:
             self.history = history
 
-        # TODO: check adapter type
         if adapter is None:
             self._adapter = InteractionAdapter()
         else:
-            self._adapter = adapter
+            if isinstance(adapter, InteractionAdapter):
+                self._adapter = adapter
+            else:
+                raise exception.UbikTypeError(
+                    "argument `adapter` should be an instance of `InteractionAdapter`")
 
         if base_callbacks is None:
             self._default_callbacks = [BaseCallback()]
