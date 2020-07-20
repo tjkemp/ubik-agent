@@ -2,7 +2,7 @@
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: download.sh <environment name>"
-    echo "Environments: banana, visualbanana, reacher, crawler"
+    echo "Environments: banana, visualbanana"
     exit
 fi
 
@@ -25,18 +25,6 @@ case $1 in
     visualbanana)
         echo "Downloading VisualBanana environment into $DESTINATION/VisualBanana_Linux/"
         wget --no-hsts https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/VisualBanana_Linux.zip -O $TMPFILE
-        unzip -q -d $DESTINATION $TMPFILE
-        rm $TMPFILE
-        ;;
-    reacher)
-        echo "Downloading Reacher environment into $DESTINATION/Reacher_Linux/"
-        wget --no-hsts  https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux.zip -O $TMPFILE
-        unzip -q -d $DESTINATION $TMPFILE
-        rm $TMPFILE
-        ;;
-    crawler)
-        echo "Downloading Crawler environment into $DESTINATION/Crawler_Linux/"
-        wget --no-hsts  https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Crawler/Crawler_Linux.zip -O $TMPFILE
         unzip -q -d $DESTINATION $TMPFILE
         rm $TMPFILE
         ;;
