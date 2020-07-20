@@ -17,8 +17,8 @@ class SarsaAgent(Agent):
             epsilon_decay=0.9,
             epsilon_min=0.1,
             gamma=1.0,
-            algorithm='expected_sarsa'):
-        """Initialize a SarsaMax or Expected Sarsa agent.
+            algorithm='q-learning'):
+        """Initialize a Q-learning or Expected Sarsa agent.
 
         Args:
             action_size (int): number of actions agent can take
@@ -27,7 +27,7 @@ class SarsaAgent(Agent):
             epsilon_decay (float): controls how fast epsilon decays
             epsilon_min (float): minimum epsilon
             gamma (float): controls how much future reward is valued [0, 1]
-            algorithm (str): either 'expected_sarsa' (default), or 'sarsamax'
+            algorithm (str): either 'q-learning' (default), or 'expected_sarsa'
 
         Raises:
             NotImplementedError: if improper algorithm name is provided
@@ -44,7 +44,7 @@ class SarsaAgent(Agent):
 
         if algorithm == 'expected_sarsa':
             self.algorithm = algorithm
-        elif algorithm == 'sarsamax':
+        elif algorithm == 'q-learning':
             self.algorithm = algorithm
         else:
             raise NotImplementedError(
@@ -120,12 +120,12 @@ class SarsaAgent(Agent):
             action_t,
             reward_next,
             state_next):
-        """Calculates the update to value function using either Sarsamax
+        """Calculates the update to value function using either Q-learning
         or Expected Sarsa algorithm."""
 
         q_current = self.Q[state_t][action_t]
 
-        if self.algorithm == 'sarsamax':
+        if self.algorithm == 'q-learning':
             q_value = (1 - self.alpha) * q_current + \
                 self.alpha * (reward_next + self.gamma * np.max(self.Q[state_next]))
 

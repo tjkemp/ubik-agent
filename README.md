@@ -16,7 +16,7 @@ I don't consider the version to be v0.1 quite yet, so expect thing to change and
 |--------------------------|-----------------------|----------------------|
 | DQN                      | Continuous/Discrete   | BananaCollector (Unity)|
 | DDPG                     | Continuous/Continuous | Reacher (Unity)      |
-| SarsaMax, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
+| Q-learning, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
 
 ### Improvements for version 0.1:
 - [x] add DDPG algorithm
