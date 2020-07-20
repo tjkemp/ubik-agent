@@ -1,7 +1,10 @@
 import os
 import json
 import argparse
+
 import matplotlib.pyplot as plt
+
+from ubikagent import exception
 
 
 def get_model_dir(model_name, model_dir='models'):
@@ -11,8 +14,12 @@ def get_model_dir(model_name, model_dir='models'):
 
 def create_model_dir(model_name, model_dir='models'):
     """Convenience function to create a directory where to save the model."""
-    os.mkdir(os.path.join(os.getcwd(), model_dir, model_name))
-
+    path = os.path.join(os.getcwd(), model_dir, model_name)
+    try:
+        os.makedirs(path, exist_ok=False)
+    except FileExistsError:
+        raise exception.UbikFileExistsError(
+            f"models directory {path} exists already")
 
 def save_graph(modelname, graph_data, ylabel='scores', filename='scores.png'):
     """Convenience function to save graphs (e.g. scores).
