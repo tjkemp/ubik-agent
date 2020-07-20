@@ -223,7 +223,7 @@ class Interaction(BaseInteraction):
 class UnityInteraction(Interaction):
     """Class facilitates the interaction between an agent and a UnityEnvironment."""
 
-    def __init__(self, agent, env):
+    def __init__(self, agent, env, seed):
         """Creates an instance of simulation.
 
         Args:
@@ -231,7 +231,7 @@ class UnityInteraction(Interaction):
             env: an instance of UnityEnvironment environment
 
         """
-        super().__init__(agent, env)
+        super().__init__(agent, env, seed)
         self.state_size, self.action_size, self.num_agents = self.stats(env)
         self._brain_name = env.brain_names[0]
 

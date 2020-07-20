@@ -12,6 +12,8 @@ class TestInteraction:
     aim is to not check for specific outputs, but to check nothing crashes.
 
     """
+    seed = 1234
+
     twenty_reachers_config = {
         'brain_name': 'ReacherBrain',
         'num_agents': 20,
@@ -55,7 +57,7 @@ class TestInteraction:
             action_type=config['vector_action_space_type'],
             num_agents=config['num_agents'])
 
-        sim = UnityInteraction(agent, env)
+        sim = UnityInteraction(agent, env, self.seed)
 
         num_episodes = 2
         max_time_steps = 2
@@ -79,7 +81,7 @@ class TestInteraction:
             action_type=config['vector_action_space_type'],
             num_agents=config['num_agents'])
 
-        sim = UnityInteraction(agent, env)
+        sim = UnityInteraction(agent, env, self.seed)
 
         num_episodes = 2
         max_time_steps = 2
@@ -103,7 +105,7 @@ class TestInteraction:
             action_type=config['vector_action_space_type'],
             num_agents=config['num_agents'])
 
-        sim = UnityInteraction(agent, env)
+        sim = UnityInteraction(agent, env, self.seed)
 
         num_episodes = 2
         max_time_steps = 2
@@ -127,7 +129,7 @@ class TestInteraction:
             action_type=config['vector_action_space_type'],
             num_agents=config['num_agents'])
 
-        sim = UnityInteraction(agent, env)
+        sim = UnityInteraction(agent, env, self.seed)
 
         num_episodes = 2
         max_time_steps = 2

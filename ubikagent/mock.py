@@ -114,3 +114,7 @@ class UnityEnvironmentMock:
     def close(self):
         """Provides `close()`, and does and returns nothing."""
         return
+
+    def seed(self, seed):
+        """Provides `seed()`, but does nothing."""
+        return
