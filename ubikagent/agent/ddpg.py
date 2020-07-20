@@ -85,7 +85,7 @@ class DDPGAgent(Agent):
             self,
             state_size,
             action_size,
-            num_agents,
+            num_agents=1,
             update_interval=1,
             update_times=1,
             lr_actor=3e-3,
@@ -117,6 +117,7 @@ class DDPGAgent(Agent):
         """
         self.state_size = state_size
         self.action_size = action_size
+        self.num_agents = num_agents
         self.lr_actor = lr_actor
         self.layers_actor = layers_actor
         self.lr_critic = lr_critic
@@ -197,14 +198,17 @@ class DDPGAgent(Agent):
         self._critic_losses = deque()
         return history
 
-    def step(self, states, actions, rewards, next_states, dones):
+    def step(self, state, action, reward, next_state, done):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
         self.timestep += 1
 
-        for state, action, reward, next_state, done in zip(
-                states, actions, rewards, next_states, dones):
+        if self.num_agents > 1:
+            for state, action, reward, next_state, done in zip(
+                    state, action, reward, next_state, done):
+                self.memory.add(state, action, reward, next_state, done)
+        else:
             self.memory.add(state, action, reward, next_state, done)
 
         if self.timestep % self.update_interval == 0:
