@@ -5,7 +5,8 @@ import numpy as np
 
 from ubikagent.history import History
 from ubikagent.helper import print_episode_statistics, print_target_reached
-from ubikagent.callback import BaseCallback, InteractionAdapter
+from ubikagent.callback import BaseCallback
+from ubikagent.adapter import InteractionAdapter
 from ubikagent import exception
 
 
