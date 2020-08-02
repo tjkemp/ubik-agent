@@ -36,9 +36,18 @@ def save_graph(modelname, graph_data, ylabel='scores', filename='scores.png'):
 
 
 def save_history(model_name, history, filename='history.json'):
-    """Save json output of class `History` in into a file."""
+    """Save json output of class `History` into a file."""
 
     str_data = json.dumps(history, ensure_ascii=False, indent=4)
+    save_path = os.path.join(get_model_dir(model_name), filename)
+    with open(save_path, 'w+') as output_file:
+        output_file.write(str_data)
+
+
+def save_parameters(model_name, params, filename='parameters.json'):
+    """Save training parameters into a file."""
+
+    str_data = json.dumps(params, ensure_ascii=False, indent=4)
     save_path = os.path.join(get_model_dir(model_name), filename)
     with open(save_path, 'w+') as output_file:
         output_file.write(str_data)
