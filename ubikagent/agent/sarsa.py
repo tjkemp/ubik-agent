@@ -11,7 +11,9 @@ class SarsaAgent(Agent):
 
     def __init__(
             self,
+            state_size,
             action_size,
+            seed,
             alpha=0.05,
             epsilon=1.0,
             epsilon_decay=0.9,
@@ -21,9 +23,11 @@ class SarsaAgent(Agent):
         """Initialize a Q-learning or Expected Sarsa agent.
 
         Args:
-            action_size (int): number of actions agent can take
+            state_size (gym.spaces.space):  the observation space
+            action_size (gym.spaces.space): the action space
+            seed (int): seed number for randomness
             alpha (float): learning rate
-            epsilon (float): controls amount o fexploration [0, 1]
+            epsilon (float): controls amount of exploration [0, 1]
             epsilon_decay (float): controls how fast epsilon decays
             epsilon_min (float): minimum epsilon
             gamma (float): controls how much future reward is valued [0, 1]
@@ -33,7 +37,9 @@ class SarsaAgent(Agent):
             NotImplementedError: if improper algorithm name is provided
 
         """
-        self.action_size = action_size
+        # NOTE: state_size and seed are currently unused, but added for
+        # uniformity as they are part of the Agent interface
+        self.action_size = action_size.n
         self.Q = defaultdict(lambda: np.zeros(self.action_size, dtype=np.float32))
 
         self.alpha = alpha
