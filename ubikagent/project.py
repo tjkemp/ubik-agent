@@ -8,7 +8,7 @@ from gym.spaces import flatdim
 from ubikagent import Interaction
 from ubikagent.agent import RandomAgent
 from ubikagent.helper import (
-    get_model_dir, create_model_dir, save_graph, save_history)
+    get_model_dir, create_model_dir, save_graph, save_parameters, save_history)
 from ubikagent.callback import TargetScore
 from ubikagent.introspection import get_methods
 
@@ -24,6 +24,7 @@ class Project(BaseProject):
     AGENT_CLASS = None
     MODEL_PARAMS = {}
     TRAINING_PARAMS = {}
+    SEED = 1234
 
     def __init__(self):
 
@@ -33,19 +34,20 @@ class Project(BaseProject):
         if self.AGENT_CLASS is None:
             raise Exception("define AGENT_CLASS (class) so the agent can be instantiated")
 
-    def train(self, modelname):
+    def train(self, modelname=None):
 
         # create environment
         env = gym.make(self.ENV_ID)
 
         # create an agent
-        state_size = flatdim(env.observation_space)  # noqa: F841
-        action_size = flatdim(env.action_space)
-        print("dims ", state_size, action_size)
-        agent = self.AGENT_CLASS(state_size, action_size, **self.MODEL_PARAMS)
+        agent = self.AGENT_CLASS(
+            env.observation_space,
+            env.action_space,
+            self.SEED,
+            **self.MODEL_PARAMS)
 
         # and create an interaction between them
-        sim = Interaction(agent, env)
+        sim = Interaction(agent, env, self.SEED)
 
         calculate_score = TargetScore(100, 0.0)
         history = sim.run(**self.TRAINING_PARAMS, callbacks=[calculate_score])
@@ -66,27 +68,28 @@ class Project(BaseProject):
         agent = self.AGENT_CLASS(
             state_size,
             action_size,
+            self.SEED,
             **self.MODEL_PARAMS)
 
         self._load(modelname, agent)
 
         # run simulation
-        sim = Interaction(agent, env)
+        sim = Interaction(agent, env, self.SEED)
         sim.run()
 
         env.close()
 
-    def random(self, modelname):
+    def random(self):
 
         # create environment
         env = gym.make(self.ENV_ID)
 
         # create an agent
         agent = RandomAgent(
-            env.observation_space, env.action_space)
+            env.observation_space, env.action_space, self.SEED)
 
         # create an interaction
-        sim = Interaction(agent, env)
+        sim = Interaction(agent, env, self.SEED)
         sim.run()
         env.close()
 
@@ -166,7 +169,7 @@ class Project(BaseProject):
     def _load(self, modelname, agent):
 
         modelfile = os.path.join(get_model_dir(modelname))
-        agent._load(modelfile)
+        agent.load(modelfile)
 
     def _save(self, modelname, agent, history):
 
@@ -174,5 +177,11 @@ class Project(BaseProject):
             create_model_dir(modelname)
             modeldir = os.path.join(get_model_dir(modelname))
             agent.save(modeldir)
+            save_parameters(
+                modeldir,
+                {
+                    'MODEL_PARAMS': self.MODEL_PARAMS,
+                    'TRAINING_PARAMS': self.TRAINING_PARAMS
+                })
             save_history(modelname, history)
             save_graph(modelname, history['score'])

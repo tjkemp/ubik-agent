@@ -1,7 +1,7 @@
 # Project specific files
-unity-environment.log
 TODO.txt
 /environments/
+/models/
 
 # IDE generated
 .vscode

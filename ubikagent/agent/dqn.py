@@ -33,7 +33,7 @@ class DQNAgent(Agent):
             self,
             state_size,
             action_size,
-            num_agents,
+            num_agents=1,
             learning_rate=5e-4,
             batch_size=64,
             tau=1e-3,
@@ -156,7 +156,12 @@ class DQNAgent(Agent):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
-        self.memory.add(state[0], action, reward[0], next_state[0], done[0])
+        if self.num_agents > 1:
+            for state, action, reward, next_state, done in zip(
+                    state, action, reward, next_state, done):
+                self.memory.add(state, action, reward, next_state, done)
+        else:
+            self.memory.add(state, action, reward, next_state, done)
 
         self.timestep += 1
 
@@ -263,9 +268,12 @@ class DQNAgentWithPER(DQNAgent):
         """Informs the agent of the consequences of an action so that
         it is able to learn from it."""
 
-        self.memory.add(
-            state[0], action, reward[0], next_state[0], done[0])
-
+        if self.num_agents > 1:
+            for state, action, reward, next_state, done in zip(
+                    state, action, reward, next_state, done):
+                self.memory.add(state, action, reward, next_state, done)
+        else:
+            self.memory.add(state, action, reward, next_state, done)
         self.timestep += 1
 
         if self.timestep % self.update_interval == 0:

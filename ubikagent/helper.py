@@ -1,7 +1,10 @@
 import os
 import json
 import argparse
+
 import matplotlib.pyplot as plt
+
+from ubikagent import exception
 
 
 def get_model_dir(model_name, model_dir='models'):
@@ -11,8 +14,12 @@ def get_model_dir(model_name, model_dir='models'):
 
 def create_model_dir(model_name, model_dir='models'):
     """Convenience function to create a directory where to save the model."""
-    os.mkdir(os.path.join(os.getcwd(), model_dir, model_name))
-
+    path = os.path.join(os.getcwd(), model_dir, model_name)
+    try:
+        os.makedirs(path, exist_ok=False)
+    except FileExistsError:
+        raise exception.UbikFileExistsError(
+            f"models directory {path} exists already")
 
 def save_graph(modelname, graph_data, ylabel='scores', filename='scores.png'):
     """Convenience function to save graphs (e.g. scores).
@@ -29,9 +36,18 @@ def save_graph(modelname, graph_data, ylabel='scores', filename='scores.png'):
 
 
 def save_history(model_name, history, filename='history.json'):
-    """Save json output of class `History` in into a file."""
+    """Save json output of class `History` into a file."""
 
     str_data = json.dumps(history, ensure_ascii=False, indent=4)
+    save_path = os.path.join(get_model_dir(model_name), filename)
+    with open(save_path, 'w+') as output_file:
+        output_file.write(str_data)
+
+
+def save_parameters(model_name, params, filename='parameters.json'):
+    """Save training parameters into a file."""
+
+    str_data = json.dumps(params, ensure_ascii=False, indent=4)
     save_path = os.path.join(get_model_dir(model_name), filename)
     with open(save_path, 'w+') as output_file:
         output_file.write(str_data)
@@ -62,67 +78,3 @@ def print_episode_statistics(history, multi_agent=False):
 def print_target_reached(history):
     """Prints a notification that target score has been reached."""
     print(f"\nTarget score reached in {history.num_episodes:d} episodes!")
-
-
-def parse_and_run(project):
-    """Parses cli arguments and runs a corresponding class and method.
-
-    This function is used in main() to provide command line interface
-    to agent classes, so that, for example `python -m examples.banana train`
-    could be evoked to call `train()` in which ever solution class is
-    defined in the `main()` function of *examples.banana* module.
-
-    In the future this may be refactored into class which dynamically
-    creates arguments.
-
-    Args:
-        project (object): an instantiated class in which the project is defined
-
-    Side effects:
-        Runs a method in a whichever class is given in the cli arguments.
-
-    """
-    parser = argparse.ArgumentParser(
-        description="Runs or trains an agent in an OpenGym environment.")
-
-    subparsers = parser.add_subparsers(
-        title='method', dest='method', help='additional help')
-
-    parser_train = subparsers.add_parser(
-        'train', help='train an agent')
-    parser_train.add_argument(
-        'modelname',
-        nargs='?',
-        help="directory name in models where to save the agent model")
-
-    parser_run = subparsers.add_parser(
-        'run', help='run environment with trained agent')
-    parser_run.add_argument(
-        'modelname',
-        help="directory name in models from where to load the agent model")
-
-    parser_random = subparsers.add_parser(
-        'random', help='run with randomly acting agent')
-    parser_random.set_defaults(modelname=None)
-
-    parser_optimize = subparsers.add_parser(
-        'optimize', help='run hyperparameter optimization')
-    parser_optimize.set_defaults(modelname=None)
-
-    parser_interactive = subparsers.add_parser(
-        'interactive', help='interact with the environment')
-    parser_interactive.set_defaults(modelname=None)
-
-    args = parser.parse_args()
-
-    if args.method is None:
-        parser.print_help()
-    else:
-        method_name = args.method
-        method_args = vars(args)
-        del method_args['method']
-        try:
-            method = getattr(project, method_name)
-            method(**method_args)
-        except AttributeError as err:
-            print(f"Error while calling the method '{method}': {err}")

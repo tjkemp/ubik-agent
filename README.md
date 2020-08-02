@@ -4,9 +4,9 @@ Status: WIP, actively developed
 
 ## About the project
 
-This project started as an excercise in training a Deep Q-Learning agent to navigate in BananaCollector 3D Unity environment.
+This project started as an excercise in training a Deep Q-Learning agent to navigate in BananaCollector (Unity ML-Agents 0.4.0) environment.
 
-Currently, I'm working on turning this project into a more general framework to train different agents in several different environments. I'm toying with the idea that this project could work as glue between algorithm libraries, optimization packages and training environments. Although, the purpose is still mainly for myself to learn more about Deep Reinforcement Learning by creating the algorithms.
+Currently, I'm working on turning this project into a more general framework to train RL agents in any OpenAI Gym environment with any of the most common RL Agent libraries. I think, too often environments, agents and the code between (providing visualization, optimization, persistance, reproducibility) are tightly coupled. Although this framework could work as glue between algorithm libraries and training environments, the main purpose is still mainly for myself to learn more about Deep Reinforcement Learning.
 
 I don't consider the version to be v0.1 quite yet, so expect thing to change and break.
 
@@ -14,9 +14,10 @@ I don't consider the version to be v0.1 quite yet, so expect thing to change and
 
 | Algorithm                | State/Action Spaces   | Example environments |
 |--------------------------|-----------------------|----------------------|
-| DQN                      | Continuous/Discrete   | BananaCollector (Unity)|
-| DDPG                     | Continuous/Continuous | Reacher (Unity)      |
-| SarsaMax, Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
+| DQN                      | Continuous/Discrete   | ~~BananaCollector (Unity)~~|
+| DDPG                     | Continuous/Continuous | ~~Reacher (Unity)~~      |
+| Q-learning | Discrete/Discrete     | Taxi (Gym)           |
+| Expected Sarsa | Discrete/Discrete     | Taxi (Gym)           |
 
 ### Improvements for version 0.1:
 - [x] add DDPG algorithm
@@ -29,14 +30,15 @@ I don't consider the version to be v0.1 quite yet, so expect thing to change and
 - [x] add Sarsa/Q-Learning agents and examples
 - [x] add callbacks for flexible logging, and adapters to handle non-standard environments and agents
 - [x] make runs reproducible
+- [x] remove legacy ML-Agents v0.4.0 examples
 - [ ] add OpenAI Gym examples
-- [ ] upgrade ML-Agents v0.4.0 to the most recent version
 - [ ] update usage examples and architecture diagrams
 
 ### Improvements for version 0.2
 - [ ] add as simple as can be vanilla versions of DQN and DDPG
 - [ ] add basic algorithms like Policy Iteration and Vanilla Policy Gradient
 - [ ] make DQN and DDPG agents capable of learning from pixel data
+- [ ] add ML-Agents examples
 
 ### Improvements for later version
 - [ ] add proper documentation
@@ -44,37 +46,10 @@ I don't consider the version to be v0.1 quite yet, so expect thing to change and
 - [ ] add more advanced variations of DQN
 - [ ] add more advanced algorithms like PPO and SAC
 
-## BananaCollector Environment
-
-![Trained Agent](https://raw.githubusercontent.com/tjkemp/ubik-agent/assets/images/env/banana.gif)
-
-In the environment agent's task is to collect yellow bananas and avoid purple bananas in a large, square world.
-
-This project would be a simple example on how to train a DQN agent and use it with Unity for anyone interested. The code is extendable for any Unity environment, although currently, the project uses somewhat old versions of dependencies.
-
-### Environment and agent details
-
-The world is a Unity environment and the agent connects to the it through [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents) package which is an open-source Unity plugin that enables games and simulations to serve as environments for training intelligent agents. The environment is provided by Udacity and it is somewhat similar to single agent version of [BananaCollector](https://github.com/Unity-Technologies/ml-agents/blob/0.4.0/docs/Learning-Environment-Examples.md#banana-collector) environment in Unity's ML-agents package.
-
-A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is provided for collecting a purple banana. Thus, the goal of the agent is to collect as many yellow bananas as possible while avoiding purple bananas.
-
-The state space has 37 dimensions and contains the agent's velocity, along with a ray-based perception of objects around the agent's forward direction.  Given this information, the agent has to learn how to best select actions.
-
-Four discrete actions are available, corresponding to:
-- **`0`** - move forward.
-- **`1`** - move backward.
-- **`2`** - turn left.
-- **`3`** - turn right.
-
-The task is episodic and considered solved when the agent gets an average score of +13 over 100 consecutive episodes.
-
-## Other environments
-
-Currently, also an executables to train and run Reacher Unity environment are included (see more information below).
 
 ## Installation
 
-Requirements for running the project are Linux, Python version >= 3.6, Unity ML-agents 0.4.0, and Pytorch 1.4.0.
+Requirements for running the project are Linux (or similar, like WSL), Python version >= 3.6 and Pytorch 1.4.0.
 
 1. Clone the repository
 
@@ -91,30 +66,29 @@ source venv/bin/activate
 pip install --no-deps -r requirements.txt
 ```
 
-3. Install Banana Collector environment for Unity
-
-Download and unzip the environment binary files with the `download.sh` script.
-
-```bash
-./environments/download.sh banana
-```
-
-Other arguments for the download script are `reacher` and `crawler` for Reacher and Crawler environments binaries respectively.
-
-Note that running the environment requires X Window System. If you are running Windows Subsystem for Linux (WSL), then you need something that provides running X applications such as VcXsrv, Xming, or x410.
-
 ## Instructions
 
-All the examples are in the *examples* package directory as classes in their own module files.
-
-For example, the BananaCollector is defined in the module `examples/banana.py`. The module defines a class and methods for training the agent and running the trained agent in the BananaCollector environment.
+All the examples are in the *examples* package directory as classes in their own files. (Currently only Gym Taxi v3.)
 
 You can run example modules in the following format: `python -m <package.module> <method> <experiment_name>`
 
 To get help on arguments for each executable, run the module with `-h` switch.
 
 ```bash
-python -m examples.banana -h
+$ python -m examples.banana -h
+
+usage: taxi.py [-h] {optimize,random,run,train} ...
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+method:
+  {optimize,random,run,train}
+                        a method in the class
+    optimize            optimize
+    random              random
+    run                 run
+    train               train
 ```
 
 ### Running an episode with an agent acting randomly
@@ -122,7 +96,7 @@ python -m examples.banana -h
 To test the environment with an agent behaving totally randomly run the executable with argument *random*.
 
 ```bash
-python -m examples.banana random
+python -m examples.taxi random
 ```
 
 ### Training an agent
@@ -130,18 +104,7 @@ python -m examples.banana random
 The python executable takes the directory name of an instance of trained agent as an argument. All the trained agents are saved into the directory *models*.
 
 ```bash
-python -m examples.banana train my-cool-agent
-```
-
-Which will output the following (omitting some messages):
-
-```
-Creating an agent (state size of 37, and 4 actions).
-Episode 100     Score: 0.00     Best: 11.00     Mean: 2.10
-Episode 200     Score: 11.00    Best: 17.00     Mean: 8.30
-Episode 300     Score: 19.00    Best: 21.00     Mean: 11.19
-Episode 373     Score: 20.00    Best: 25.00     Mean: 13.03
-Target score reached in 373 episodes!
+python -m examples.taxi train my-cool-agent
 ```
 
 At the end of the training, the agent model will be saved in the directory *models/my-cool-agent* as `checkpoint.pth`.
@@ -149,12 +112,8 @@ At the end of the training, the agent model will be saved in the directory *mode
 ### Running an episode with pre-trained agent
 
 ```bash
-python -m examples.banana run my-cool-agent
+python -m examples.taxi run my-cool-agent
 ```
-
-### Using other included environments
-
-The modules `taxi.py`, `crawler.py` and `reacher.py` work similarly as the BananaCollector environment.
 
 ## Licenses and acknowledgements
 
