@@ -3,6 +3,9 @@ import abc
 
 class Agent(abc.ABC):
 
+    def __init__(self, state_size, action_size, seed, *args, **kwargs):
+        pass
+
     @abc.abstractmethod
     def new_episode(self):
         pass

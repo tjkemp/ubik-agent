@@ -5,7 +5,7 @@ from ubikagent.agent.abc import Agent
 
 class RandomAgent(Agent):
 
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, seed):
         """Initializes an instance of RandomAgent.
 
         Only supports single agent environments.
@@ -13,6 +13,7 @@ class RandomAgent(Agent):
         Args:
             state_size (gym.spaces.space):  the observation space size
             action_size (gym.spaces.space): the action space size
+            seed (int): seed number for randomness
 
         """
         self.state_size = state_size
